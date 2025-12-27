@@ -13,6 +13,9 @@ import {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // 🔥 ADICIONAR PREFIXO GLOBAL /api
+  app.setGlobalPrefix('api');
+
   // ===== HELMET - Configuração flexível para DEV/PROD =====
   if (process.env.NODE_ENV === 'production') {
     app.use(
@@ -49,91 +52,55 @@ async function bootstrap() {
   }
 
   // ===== CORS - Compatível com Mobile (Capacitor) + Ngrok =====
-  const getAllowedOrigins = (): string[] => {
-    if (process.env.NODE_ENV === 'production') {
-      if (!process.env.ALLOWED_ORIGINS) {
-        throw new Error('ALLOWED_ORIGINS deve ser configurado em produção');
-      }
-      return process.env.ALLOWED_ORIGINS.split(',').map((origin) =>
-        origin.trim(),
-      );
-    }
-
-    // Em desenvolvimento: Permissivo para todos os cenários
-    return [
-      'http://localhost:8100',
-      'http://localhost:4200',
-      'http://localhost:3000',
-      'http://127.0.0.1:4200',
-      'http://127.0.0.1:8100',
-      'http://192.168.0.8:8100',
-      'http://192.168.0.8:4200',
-      'http://192.168.0.9:8100',
-      'capacitor://localhost', // 🔥 CRÍTICO: App Capacitor no iOS
-      'ionic://localhost', // 🔥 CRÍTICO: App Capacitor no Android
-      'http://localhost', // 🔥 CRÍTICO: Capacitor genérico
-      'https://edacious-closer-catrice.ngrok-free.dev', // 🔥 NGROK DOMÍNIO FIXO
-    ];
-  };
-
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = getAllowedOrigins();
+    origin: [
+      // Localhost
+      'http://localhost:3000',
+      'http://localhost:8081',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:8081',
 
-      // 🔥 CRÍTICO: Permitir requests sem origin
-      // Mobile apps (Capacitor), Postman, curl não enviam origin
-      if (!origin) {
-        return callback(null, true);
-      }
+      // Ngrok - aceita qualquer subdomínio
+      /^https:\/\/.*\.ngrok-free\.dev$/,
+      /^https:\/\/.*\.ngrok\.io$/,
+      /^https:\/\/.*\.ngrok\.app$/,
 
-      // Verificar se origin está na lista
-      const isAllowed = allowedOrigins.some((allowed) => {
-        // Match exato ou prefixo (para portas dinâmicas)
-        return origin === allowed || origin.startsWith(allowed);
-      });
+      // Rede local (192.168.x.x)
+      /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/,
 
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.warn(`❌ CORS bloqueou origin: ${origin}`);
-        console.warn(`✅ Origins permitidas: ${allowedOrigins.join(', ')}`);
+      // Expo
+      /^exp:\/\/.*/,
 
-        // Em DEV: Permitir mesmo assim (log de warning)
-        if (process.env.NODE_ENV !== 'production') {
-          callback(null, true);
-        } else {
-          callback(new Error(`Origin ${origin} não permitida pelo CORS`));
-        }
-      }
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      // Capacitor (iOS/Android)
+      'capacitor://localhost',
+      'http://localhost',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
     allowedHeaders: [
       'Content-Type',
       'Authorization',
+      'ngrok-skip-browser-warning',
       'Accept',
-      'X-Requested-With',
-      'ngrok-skip-browser-warning', // 🔥 CRÍTICO: Header do Ngrok
       'Origin',
+      'X-Requested-With',
     ],
     exposedHeaders: ['Authorization'],
-    credentials: true,
-    maxAge: 86400, // 24h
+    maxAge: 86400, // 24 horas
   });
 
+  console.log('🌐 CORS configurado para ngrok, mobile e rede local.');
+
+  // ===== VALIDATION PIPE GLOBAL =====
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-      stopAtFirstError: false,
-      disableErrorMessages: process.env.NODE_ENV === 'production',
     }),
   );
 
-  // Exception Filters Globais
+  // ===== EXCEPTION FILTERS GLOBAIS =====
   app.useGlobalFilters(
     new AllExceptionsFilter(),
     new PrismaExceptionFilter(),
@@ -173,7 +140,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
 
   if (process.env.NODE_ENV !== 'production') {
-    SwaggerModule.setup('api', app, document, {
+    SwaggerModule.setup('api/docs', app, document, {
       swaggerOptions: {
         persistAuthorization: true,
       },
@@ -182,20 +149,26 @@ async function bootstrap() {
     console.warn('⚠️  Swagger UI desabilitado em produção por segurança');
   }
 
+  // ===== START SERVER =====
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0'); // 🔥 CRÍTICO: 0.0.0.0 para Docker
 
   console.log('');
-  console.log('🚀 Aplicação rodando em:');
-  console.log(`   Local:  http://localhost:${port}`);
-  console.log(`   Docker: http://0.0.0.0:${port}`);
+  console.log('='.repeat(70));
+  console.log('🚀 BarberBoss Backend - RODANDO');
+  console.log('='.repeat(70));
+  console.log(`📍 Local:       http://localhost:${port}/api`);
+  console.log(`📍 Docker:      http://0.0.0.0:${port}/api`);
   if (process.env.NGROK_DOMAIN) {
-    console.log(`   Ngrok:  https://${process.env.NGROK_DOMAIN}`);
+    console.log(`📍 Ngrok:       https://${process.env.NGROK_DOMAIN}/api`);
+  } else {
+    console.log(`📍 Ngrok:       Verifique http://localhost:4040`);
   }
   console.log('');
-  console.log(`📚 Swagger UI: http://localhost:${port}/api`);
-  console.log(`🔒 Ambiente: ${process.env.NODE_ENV}`);
-  console.log(`🌐 CORS Origins: ${getAllowedOrigins().length} configuradas`);
+  console.log(`📚 Swagger UI:  http://localhost:${port}/api/docs`);
+  console.log(`🔐 Ambiente:    ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 CORS:        Habilitado para Mobile + Ngrok`);
+  console.log('='.repeat(70));
   console.log('');
 }
 
