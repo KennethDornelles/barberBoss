@@ -80,8 +80,11 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+**/dist
 .output
+
+# Ignorar dist do backend
+backend/dist
 
 # Gatsby files
 .cache/
