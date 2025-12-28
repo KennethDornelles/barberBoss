@@ -1,4 +1,3 @@
-
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Public } from './decorators/public.decorator';
@@ -18,8 +17,8 @@ export class AppController {
   @Get('health')
   @ApiTags('health')
   @ApiOperation({ summary: 'Health check endpoint' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Service is healthy',
     schema: {
       example: {
@@ -27,9 +26,9 @@ export class AppController {
         timestamp: '2025-12-24T00:30:00.000Z',
         service: 'Barber Boss API',
         version: '1.0.0',
-        environment: 'development'
-      }
-    }
+        environment: 'development',
+      },
+    },
   })
   getHealth() {
     return {

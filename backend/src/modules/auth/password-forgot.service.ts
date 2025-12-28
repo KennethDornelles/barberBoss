@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -12,7 +11,6 @@ import { PasswordResetDto } from './dto/password-reset.dto';
 import * as bcrypt from 'bcrypt';
 import { BrevoService } from './brevo.service';
 
-
 @Injectable()
 export class PasswordForgotService {
   private readonly logger = new Logger(PasswordForgotService.name);
@@ -20,22 +18,28 @@ export class PasswordForgotService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly brevoService: BrevoService,
+    public readonly brevoService: BrevoService, // ⬅️ MUDOU DE PRIVATE PARA PUBLIC
   ) {}
 
   /**
    * Método antigo (mantido para compatibilidade)
    */
   async requestPasswordResetOld(dto: PasswordForgotDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
-    const token = this.jwtService.sign({ userId: user.id }, { expiresIn: '1h' });
+    const token = this.jwtService.sign(
+      { userId: user.id },
+      { expiresIn: '1h' },
+    );
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/reset-password?token=${token}`;
     this.logger.log(`[Antigo] Token de recuperação: ${token}`);
     this.logger.log(`[Antigo] Link de redefinição: ${resetLink}`);
-    await this.brevoService.sendPasswordResetEmail(user.email, resetLink);
+
+    await this.brevoService.sendForgotPasswordEmail(user.email, token);
     return {
       message: 'Se o e-mail existir, um link de redefinição foi enviado.',
       token,
@@ -53,10 +57,15 @@ export class PasswordForgotService {
    * Solicita envio de código de recuperação por email
    */
   async requestPasswordReset(dto: PasswordForgotDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
     // Segurança: nunca revela se existe ou não
     if (!user) {
-      this.logger.warn(`[Recuperação] Tentativa para email inexistente: ${dto.email}`);
+      this.logger.warn(
+        `[Recuperação] Tentativa para email inexistente: ${dto.email}`,
+      );
       return { message: 'Código enviado para seu email.' };
     }
 
@@ -86,9 +95,13 @@ export class PasswordForgotService {
    * Redefine a senha usando código de 6 dígitos
    */
   async resetPassword(dto: PasswordResetDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (!user) {
-      this.logger.warn(`[Reset] Tentativa para email inexistente: ${dto.email}`);
+      this.logger.warn(
+        `[Reset] Tentativa para email inexistente: ${dto.email}`,
+      );
       throw new BadRequestException('Código inválido ou expirado');
     }
 
@@ -110,8 +123,14 @@ export class PasswordForgotService {
     const hashed = await bcrypt.hash(dto.newPassword, 10);
 
     await this.prisma.$transaction([
-      this.prisma.user.update({ where: { id: user.id }, data: { password: hashed } }),
-      this.prisma.recoveryCode.update({ where: { id: recovery.id }, data: { used: true } }),
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashed },
+      }),
+      this.prisma.recoveryCode.update({
+        where: { id: recovery.id },
+        data: { used: true },
+      }),
     ]);
 
     this.logger.log(`[Reset] Senha redefinida para ${user.email}`);

@@ -51,7 +51,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (request.url !== '/health') {
       this.logger.error(
         `Unhandled Exception: ${request.method} ${request.url}`,
-        exception instanceof Error ? exception.stack : JSON.stringify(exception),
+        exception instanceof Error
+          ? exception.stack
+          : JSON.stringify(exception),
         JSON.stringify({
           ...errorResponse,
           user: (request as Request & { user?: { id?: string } }).user?.id,

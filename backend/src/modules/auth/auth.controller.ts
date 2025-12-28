@@ -1,8 +1,6 @@
-import { PasswordForgotDto } from './dto/password-forgot.dto';
-import { PasswordResetDto } from './dto/password-reset.dto';
-import { PasswordForgotService } from './password-forgot.service';
 import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { PasswordForgotService } from './password-forgot.service';
 import {
   ApiTags,
   ApiOperation,
@@ -11,6 +9,8 @@ import {
 } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { PasswordForgotDto } from './dto/password-forgot.dto';
+import { PasswordResetDto } from './dto/password-reset.dto';
 import { Public } from '../../decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../../decorators/current-user.decorator';
@@ -24,14 +24,30 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly passwordForgotService: PasswordForgotService,
   ) {}
+
+  /**
+   * POST /api/auth/forgot-password
+   * Envia código de 6 dígitos por email
+   */
   @Public()
   @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicitar código de recuperação de senha' })
+  @ApiResponse({
+    status: 200,
+    description: 'Código enviado para o email (se existir)',
+  })
   async forgotPassword(@Body() dto: PasswordForgotDto) {
     return this.passwordForgotService.requestPasswordReset(dto);
   }
 
+  /**
+   * POST /api/auth/reset-password
+   * Redefine a senha usando código de 6 dígitos
+   */
   @Public()
   @Post('reset-password')
+  @ApiOperation({ summary: 'Redefinir senha com código de 6 dígitos' })
+  @ApiResponse({ status: 200, description: 'Senha redefinida com sucesso' })
   async resetPassword(@Body() dto: PasswordResetDto) {
     return this.passwordForgotService.resetPassword(dto);
   }

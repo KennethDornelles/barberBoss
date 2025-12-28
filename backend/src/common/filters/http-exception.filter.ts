@@ -36,7 +36,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
           : HttpStatus[status],
     };
 
-
     // Não logar exceções da rota /health para evitar poluição de logs
     if (request.url !== '/health') {
       this.logger.error(

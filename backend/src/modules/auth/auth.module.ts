@@ -7,12 +7,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt-strategies';
 import { PrismaModule } from '../../prisma/prisma.module';
-import { PasswordForgotController } from './password-forgot.controller';
 import { PasswordForgotService } from './password-forgot.service';
 import { BrevoService } from './brevo.service';
 
 @Module({
   imports: [
+    ConfigModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -26,7 +26,8 @@ import { BrevoService } from './brevo.service';
     }),
     PrismaModule,
   ],
-  controllers: [AuthController, PasswordForgotController],
+  // ✅ Removido PasswordForgotController - tudo está no AuthController agora
+  controllers: [AuthController],
   providers: [AuthService, JwtStrategy, PasswordForgotService, BrevoService],
   exports: [AuthService],
 })

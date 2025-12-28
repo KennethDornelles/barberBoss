@@ -1,56 +1,96 @@
-import { Injectable } from '@nestjs/common';
-import * as Brevo from '@getbrevo/brevo';
+import { Injectable, Logger } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BrevoService {
-  private readonly apiInstance: Brevo.TransactionalEmailsApi;
+  private readonly logger = new Logger(BrevoService.name);
+  private transporter: nodemailer.Transporter;
 
-  constructor() {
-    this.apiInstance = new Brevo.TransactionalEmailsApi();
-    this.apiInstance.setApiKey(
-      Brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY || '',
-    );
+  constructor(private readonly configService: ConfigService) {
+    // Configuração CORRETA para Gmail
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true para 465, false para outras portas
+      auth: {
+        user: this.configService.get<string>('SMTP_USER'),
+        pass: this.configService.get<string>('SMTP_PASS'), // Precisa ser senha de app
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    // Verifica se a configuração está correta (sem bloquear o construtor)
+    void this.verifyConnection();
   }
 
-  async sendPasswordResetEmail(to: string, resetLink: string) {
-    const sendSmtpEmail = {
-      to: [{ email: to }],
-      subject: 'Redefinição de senha',
-      htmlContent: `<p>Para redefinir sua senha, clique no link abaixo:</p><p><a href="${resetLink}">${resetLink}</a></p>`,
-      sender: { name: 'BarberBoss', email: 'no-reply@barberboss.com' },
-    };
+  /**
+   * Verifica a conexão com o servidor SMTP
+   */
+  private async verifyConnection() {
     try {
-      const response = await this.apiInstance.sendTransacEmail(sendSmtpEmail);
-      console.log('[BrevoService] E-mail enviado com sucesso:', response);
+      await this.transporter.verify();
+      this.logger.log('✅ Servidor SMTP conectado e pronto para enviar emails');
     } catch (error) {
-      console.error('[BrevoService] Falha ao enviar e-mail:', error);
+      this.logger.error('❌ Erro na configuração SMTP:', error.message);
+      this.logger.error(
+        'Verifique suas credenciais SMTP_USER e SMTP_PASS no .env',
+      );
+    }
+  }
+
+  /**
+   * Envia código de recuperação de senha por e-mail
+   */
+  async sendRecoveryCodeEmail(email: string, name: string, code: string) {
+    const html = this.getRecoveryEmailTemplate(name, code);
+
+    try {
+      this.logger.log(`📧 Enviando código de recuperação para: ${email}`);
+
+      const info = await this.transporter.sendMail({
+        from: `"BarberBoss" <${this.configService.get<string>('SMTP_USER')}>`,
+        to: email,
+        subject: 'Seu código de recuperação - BarberBoss',
+        html: html,
+        text: `Olá ${name}, seu código de recuperação é: ${code}. Ele expira em 15 minutos.`,
+      });
+
+      this.logger.log('✅ Email enviado com sucesso!');
+      this.logger.log(`Message ID: ${info.messageId}`);
+      this.logger.log(`Response: ${info.response}`);
+
+      if (info.accepted && info.accepted.length > 0) {
+        this.logger.log(`✅ Aceito por: ${info.accepted.join(', ')}`);
+      }
+
+      if (info.rejected && info.rejected.length > 0) {
+        this.logger.warn(`⚠️ Rejeitado por: ${info.rejected.join(', ')}`);
+      }
+
+      return info;
+    } catch (error) {
+      this.logger.error('❌ Erro ao enviar código:', {
+        message: error.message,
+        code: error.code,
+        command: error.command,
+        response: error.response,
+      });
       throw error;
     }
   }
 
   /**
-   * Envia código de recuperação de senha por email
+   * Método obsoleto: envio de link de redefinição removido. Use sendRecoveryCodeEmail.
    */
-  async sendRecoveryCodeEmail(to: string, name: string, code: string) {
-    const sendSmtpEmail = {
-      to: [{ email: to }],
-      subject: '🔑 Código de Recuperação - BarberBoss',
-      htmlContent: this.getRecoveryEmailTemplate(name, code),
-      sender: {
-        name: 'BarberBoss',
-        email: process.env.BREVO_FROM_EMAIL || 'noreply@barberboss.com',
-      },
-    };
-
-    try {
-      const response = await this.apiInstance.sendTransacEmail(sendSmtpEmail);
-      console.log('[BrevoService] Email enviado:', response);
-      return response;
-    } catch (error) {
-      console.error('[BrevoService] Erro ao enviar email:', error);
-      throw error;
-    }
+  async sendForgotPasswordEmail(email: string, token: string) {
+    this.logger.warn(
+      'Método obsoleto. Use sendRecoveryCodeEmail para envio de código de recuperação.',
+    );
+    // Opcional: pode lançar erro ou apenas logar
+    return;
   }
 
   /**
@@ -69,7 +109,7 @@ export class BrevoService {
     
     <!-- Header -->
     <div style="background: #3b82f6; padding: 30px; text-align: center;">
-      <h1 style="color: white; margin: 0; font-size: 24px;">🔑 BarberBoss</h1>
+      <h1 style="color: white; margin: 0; font-size: 24px;">🔒 BarberBoss</h1>
     </div>
     
     <!-- Content -->
@@ -101,7 +141,7 @@ export class BrevoService {
     <!-- Footer -->
     <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
       <p style="font-size: 12px; color: #9ca3af; margin: 0;">
-        © 2024 BarberBoss - Gestão de Barbearias
+        © 2025 BarberBoss - Gestão de Barbearias
       </p>
     </div>
     
