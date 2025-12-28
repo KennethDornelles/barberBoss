@@ -1,18 +1,18 @@
 // src/utils/formatters.ts
-import dayjs from 'dayjs';
-import 'dayjs/locale/pt-br';
-import { DATE_FORMATS } from '../constants/api';
+import dayjs from "dayjs";
+import "dayjs/locale/pt-br";
+import { DATE_FORMATS } from "../constants/api";
 
 // Configure dayjs locale
-dayjs.locale('pt-br');
+dayjs.locale("pt-br");
 
 /**
  * Format Currency (Brazilian Real)
  */
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   }).format(value);
 };
 
@@ -22,9 +22,9 @@ export const formatCurrency = (value: number): string => {
  * Output: (11) 99999-9999
  */
 export const formatPhone = (phone: string): string => {
-  if (!phone) return '';
+  if (!phone) return "";
 
-  const digitsOnly = phone.replace(/\D/g, '');
+  const digitsOnly = phone.replace(/\D/g, "");
 
   if (digitsOnly.length === 11) {
     return `(${digitsOnly.slice(0, 2)}) ${digitsOnly.slice(2, 7)}-${digitsOnly.slice(7)}`;
@@ -43,9 +43,9 @@ export const formatPhone = (phone: string): string => {
  * Output: 123.456.789-00
  */
 export const formatCPF = (cpf: string): string => {
-  if (!cpf) return '';
+  if (!cpf) return "";
 
-  const digitsOnly = cpf.replace(/\D/g, '');
+  const digitsOnly = cpf.replace(/\D/g, "");
 
   if (digitsOnly.length !== 11) return cpf;
 
@@ -56,7 +56,7 @@ export const formatCPF = (cpf: string): string => {
  * Remove Formatting (keep only digits)
  */
 export const removeFormatting = (value: string): string => {
-  return value.replace(/\D/g, '');
+  return value.replace(/\D/g, "");
 };
 
 /**
@@ -112,45 +112,45 @@ export const formatDateTimeLong = (date: string | Date): string => {
 export const formatRelativeTime = (date: string | Date): string => {
   const now = dayjs();
   const target = dayjs(date);
-  const diffInMinutes = target.diff(now, 'minute');
+  const diffInMinutes = target.diff(now, "minute");
 
   if (Math.abs(diffInMinutes) < 1) {
-    return 'agora';
+    return "agora";
   }
 
   if (Math.abs(diffInMinutes) < 60) {
     const minutes = Math.abs(diffInMinutes);
     return diffInMinutes < 0
-      ? `há ${minutes} minuto${minutes > 1 ? 's' : ''}`
-      : `em ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+      ? `há ${minutes} minuto${minutes > 1 ? "s" : ""}`
+      : `em ${minutes} minuto${minutes > 1 ? "s" : ""}`;
   }
 
   if (Math.abs(diffInMinutes) < 1440) {
     // Less than 24 hours
     const hours = Math.floor(Math.abs(diffInMinutes) / 60);
     return diffInMinutes < 0
-      ? `há ${hours} hora${hours > 1 ? 's' : ''}`
-      : `em ${hours} hora${hours > 1 ? 's' : ''}`;
+      ? `há ${hours} hora${hours > 1 ? "s" : ""}`
+      : `em ${hours} hora${hours > 1 ? "s" : ""}`;
   }
 
   const days = Math.floor(Math.abs(diffInMinutes) / 1440);
   if (days < 7) {
     return diffInMinutes < 0
-      ? `há ${days} dia${days > 1 ? 's' : ''}`
-      : `em ${days} dia${days > 1 ? 's' : ''}`;
+      ? `há ${days} dia${days > 1 ? "s" : ""}`
+      : `em ${days} dia${days > 1 ? "s" : ""}`;
   }
 
   if (days < 30) {
     const weeks = Math.floor(days / 7);
     return diffInMinutes < 0
-      ? `há ${weeks} semana${weeks > 1 ? 's' : ''}`
-      : `em ${weeks} semana${weeks > 1 ? 's' : ''}`;
+      ? `há ${weeks} semana${weeks > 1 ? "s" : ""}`
+      : `em ${weeks} semana${weeks > 1 ? "s" : ""}`;
   }
 
   const months = Math.floor(days / 30);
   return diffInMinutes < 0
-    ? `há ${months} ${months > 1 ? 'meses' : 'mês'}`
-    : `em ${months} ${months > 1 ? 'meses' : 'mês'}`;
+    ? `há ${months} ${months > 1 ? "meses" : "mês"}`
+    : `em ${months} ${months > 1 ? "meses" : "mês"}`;
 };
 
 /**
@@ -179,8 +179,8 @@ export const formatDuration = (minutes: number): string => {
  * Output: "João"
  */
 export const formatFirstName = (fullName: string): string => {
-  if (!fullName) return '';
-  return fullName.split(' ')[0];
+  if (!fullName) return "";
+  return fullName.split(" ")[0];
 };
 
 /**
@@ -189,10 +189,10 @@ export const formatFirstName = (fullName: string): string => {
  * Output: "JS"
  */
 export const formatInitials = (fullName: string): string => {
-  if (!fullName) return '';
+  if (!fullName) return "";
 
-  const names = fullName.trim().split(' ');
-  
+  const names = fullName.trim().split(" ");
+
   if (names.length === 1) {
     return names[0].charAt(0).toUpperCase();
   }
@@ -209,7 +209,7 @@ export const formatInitials = (fullName: string): string => {
  * Output: "João da silva"
  */
 export const capitalizeFirstLetter = (text: string): string => {
-  if (!text) return '';
+  if (!text) return "";
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
@@ -219,9 +219,9 @@ export const capitalizeFirstLetter = (text: string): string => {
  * Output: "João Da Silva"
  */
 export const capitalizeWords = (text: string): string => {
-  if (!text) return '';
+  if (!text) return "";
   return text
-    .split(' ')
+    .split(" ")
     .map((word) => capitalizeFirstLetter(word))
-    .join(' ');
+    .join(" ");
 };

@@ -1,16 +1,22 @@
 // src/navigation/AppNavigator.tsx
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAuth } from '../context/AuthContext';
-import { ActivityIndicator, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS } from '../constants/colors';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useAuth } from "../context/AuthContext";
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { COLORS } from "../constants/colors";
 
-// Auth Screens
-import { LoginScreen } from '../screens/Auth/LoginScreen';
-import { RegisterScreen } from '../screens/Auth/RegisterScreen';
-import { ForgotPasswordScreen } from '../screens/Auth/ForgotPasswordScreen';
-import { ResetPasswordScreen } from '../screens/Auth/ResetPasswordScreen';
+// Auth Screens - IMPORTS CORRIGIDOS
+import LoginScreen from "../screens/Auth/LoginScreen";
+import RegisterScreen from "../screens/Auth/RegisterScreen";
+import ForgotPasswordScreen from "../screens/Auth/ForgotPasswordScreen";
+// ResetPasswordScreen removido - não existe (funcionalidade está dentro do ForgotPasswordScreen)
 
 // ============================================================================
 // TYPES
@@ -19,7 +25,6 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  ResetPassword: { token?: string };
 };
 
 export type MainStackParamList = {
@@ -44,13 +49,15 @@ const AuthNavigator: React.FC = () => {
     <AuthStack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        animation: "slide_from_right",
       }}
     >
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-      <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+      <AuthStack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+      />
     </AuthStack.Navigator>
   );
 };
@@ -72,17 +79,15 @@ const MainNavigator: React.FC = () => {
         {() => (
           <View style={styles.placeholderContainer}>
             <Text style={styles.placeholderTitle}>
-              ðŸŽ‰ Bem-vindo ao BarberBoss!
+              🎉 Bem-vindo ao BarberBoss!
             </Text>
             <Text style={styles.placeholderSubtext}>
-              VocÃª estÃ¡ autenticado como:
+              Você está autenticado como:
             </Text>
             <Text style={styles.placeholderUserName}>
-              {user?.name || 'UsuÃ¡rio'}
+              {user?.name || "Usuário"}
             </Text>
-            <Text style={styles.placeholderUserEmail}>
-              {user?.email}
-            </Text>
+            <Text style={styles.placeholderUserEmail}>{user?.email}</Text>
             <Text style={styles.placeholderInfo}>
               Substitua este componente pelo seu MainNavigator real
             </Text>
@@ -120,7 +125,7 @@ const RootNavigator: React.FC = () => {
     <RootStack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: 'fade',
+        animation: "fade",
       }}
     >
       {isSignedIn ? (
@@ -149,8 +154,8 @@ export const AppNavigator: React.FC = () => {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: COLORS.midnight_navy,
   },
 
@@ -159,63 +164,63 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.grey_steel,
   },
-  
+
   placeholderContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: COLORS.midnight_navy,
     padding: 24,
   },
-  
+
   placeholderTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.white_pure,
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   placeholderSubtext: {
     fontSize: 16,
     color: COLORS.grey_steel,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
   },
 
   placeholderUserName: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.royal_blue,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 4,
   },
 
   placeholderUserEmail: {
     fontSize: 14,
     color: COLORS.grey_steel,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 32,
   },
-  
+
   placeholderInfo: {
     fontSize: 14,
     color: COLORS.grey_steel,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 32,
     paddingHorizontal: 32,
   },
-  
+
   signOutButton: {
     backgroundColor: COLORS.royal_blue,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 8,
   },
-  
+
   signOutButtonText: {
     color: COLORS.white_pure,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

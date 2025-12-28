@@ -1,20 +1,20 @@
 // src/hooks/useDebounce.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Debounce Hook
- * 
+ *
  * Delays updating a value until after a specified delay
  * Useful for search inputs to avoid excessive API calls
- * 
+ *
  * @param value - The value to debounce
  * @param delay - Delay in milliseconds (default: 500ms)
  * @returns Debounced value
- * 
+ *
  * @example
  * const [searchTerm, setSearchTerm] = useState('');
  * const debouncedSearchTerm = useDebounce(searchTerm, 500);
- * 
+ *
  * useEffect(() => {
  *   if (debouncedSearchTerm) {
  *     // Make API call with debouncedSearchTerm
@@ -41,25 +41,25 @@ export const useDebounce = <T>(value: T, delay: number = 500): T => {
 
 /**
  * Debounce Function Hook
- * 
+ *
  * Returns a debounced version of a function
- * 
+ *
  * @param func - Function to debounce
  * @param delay - Delay in milliseconds (default: 500ms)
  * @returns Debounced function
- * 
+ *
  * @example
  * const handleSearch = (term: string) => {
  *   // Make API call
  * };
- * 
+ *
  * const debouncedSearch = useDebounceFn(handleSearch, 500);
- * 
+ *
  * <TextInput onChangeText={debouncedSearch} />
  */
 export const useDebounceFn = <T extends (...args: any[]) => any>(
   func: T,
-  delay: number = 500
+  delay: number = 500,
 ): ((...args: Parameters<T>) => void) => {
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 

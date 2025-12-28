@@ -13,53 +13,53 @@
 
 export const COLORS = {
   // Cores Base - Dark Mode Premium
-  midnight_navy: '#0b1120',
-  slate_grey: '#1e293b',
-  royal_blue: '#3b82f6',
-  vintage_red: '#ef4444',
-  white_pure: '#ffffff',
-  grey_steel: '#94a3b8',
+  midnight_navy: "#0b1120",
+  slate_grey: "#1e293b",
+  royal_blue: "#3b82f6",
+  vintage_red: "#ef4444",
+  white_pure: "#ffffff",
+  grey_steel: "#94a3b8",
 
   // Cores Primárias
-  primary: '#3b82f6',
-  primaryShade: '#3367d6',
-  primaryTint: '#4f8cff',
+  primary: "#3b82f6",
+  primaryShade: "#3367d6",
+  primaryTint: "#4f8cff",
 
   // Cores Secundárias
-  secondary: '#ef4444',
-  secondaryShade: '#d63d3d',
-  secondaryTint: '#f15555',
+  secondary: "#ef4444",
+  secondaryShade: "#d63d3d",
+  secondaryTint: "#f15555",
 
   // Estados
-  success: '#10b981',
-  successShade: '#0d9e71',
-  successTint: '#28c68e',
+  success: "#10b981",
+  successShade: "#0d9e71",
+  successTint: "#28c68e",
 
-  danger: '#ef4444',
-  dangerShade: '#d63d3d',
-  dangerTint: '#f15555',
+  danger: "#ef4444",
+  dangerShade: "#d63d3d",
+  dangerTint: "#f15555",
 
-  warning: '#f59e0b',
-  warningShade: '#dc860d',
-  warningTint: '#f7a623',
+  warning: "#f59e0b",
+  warningShade: "#dc860d",
+  warningTint: "#f7a623",
 
-  info: '#3b82f6',
+  info: "#3b82f6",
 
   // Backgrounds
-  background: '#0b1120',
-  surface: '#1e293b',
+  background: "#0b1120",
+  surface: "#1e293b",
 
   // Text
-  text: '#94a3b8',
-  textPrimary: '#ffffff',
-  textSecondary: '#94a3b8',
+  text: "#94a3b8",
+  textPrimary: "#ffffff",
+  textSecondary: "#94a3b8",
 
   // Border
-  border: '#1e293b',
+  border: "#1e293b",
 
   // Transparent overlays
-  overlay: 'rgba(11, 17, 32, 0.95)',
-  overlayLight: 'rgba(30, 41, 59, 0.5)',
+  overlay: "rgba(11, 17, 32, 0.95)",
+  overlayLight: "rgba(30, 41, 59, 0.5)",
 };
 
 // ============================================================================
@@ -117,31 +117,31 @@ export const SIZES = {
 export const FONTS = {
   // Headings - Oswald (Bold, Condensed, Uppercase)
   heading: {
-    fontFamily: 'Oswald_700Bold',
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontFamily: "Oswald_700Bold",
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
 
   // Body - Inter (Clean, Modern)
   body: {
-    fontFamily: 'Inter_400Regular',
-    fontWeight: '400',
+    fontFamily: "Inter_400Regular",
+    fontWeight: "400",
   },
 
   bodyMedium: {
-    fontFamily: 'Inter_500Medium',
-    fontWeight: '500',
+    fontFamily: "Inter_500Medium",
+    fontWeight: "500",
   },
 
   bodySemiBold: {
-    fontFamily: 'Inter_600SemiBold',
-    fontWeight: '600',
+    fontFamily: "Inter_600SemiBold",
+    fontWeight: "600",
   },
 
   bodyBold: {
-    fontFamily: 'Inter_700Bold',
-    fontWeight: '700',
+    fontFamily: "Inter_700Bold",
+    fontWeight: "700",
   },
 };
 
@@ -151,7 +151,7 @@ export const FONTS = {
 
 export const SHADOWS = {
   xs: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -159,7 +159,7 @@ export const SHADOWS = {
   },
 
   sm: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -167,7 +167,7 @@ export const SHADOWS = {
   },
 
   md: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -175,7 +175,7 @@ export const SHADOWS = {
   },
 
   lg: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 15,
@@ -184,7 +184,7 @@ export const SHADOWS = {
 
   // Glow Effects
   glowPrimary: {
-    shadowColor: '#3b82f6',
+    shadowColor: "#3b82f6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 15,
@@ -192,7 +192,7 @@ export const SHADOWS = {
   },
 
   glowDanger: {
-    shadowColor: '#ef4444',
+    shadowColor: "#ef4444",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 15,

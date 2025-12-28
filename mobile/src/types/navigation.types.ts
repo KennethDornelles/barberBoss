@@ -1,5 +1,5 @@
 // src/types/navigation.types.ts
-import { NavigatorScreenParams } from '@react-navigation/native';
+import { NavigatorScreenParams } from "@react-navigation/native";
 
 /**
  * Root Stack Navigator

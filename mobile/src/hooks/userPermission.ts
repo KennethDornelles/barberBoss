@@ -1,10 +1,10 @@
 // src/hooks/usePermission.ts
-import { useAuth } from '../context/AuthContext';
-import { Role } from '../types/enums';
+import { useAuth } from "../context/AuthContext";
+import { Role } from "../types/enums";
 
 /**
  * Permission Hook
- * 
+ *
  * React Native equivalent to Angular RoleGuard
  * Checks if user has required role(s) to access features
  */
@@ -93,13 +93,13 @@ export const usePermission = (): UsePermissionReturn => {
 
 /**
  * Example usage in component:
- * 
+ *
  * const { hasRole, canManageServices } = usePermission();
- * 
+ *
  * if (hasRole([Role.ADMIN, Role.BARBER])) {
  *   // Show admin/barber content
  * }
- * 
+ *
  * if (canManageServices) {
  *   // Show service management buttons
  * }

@@ -1,5 +1,5 @@
 // src/screens/Auth/LoginScreen.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,20 +7,23 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
   Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '../../context/AuthContext';
-import { Input } from '../../components/common/Input';
-import { Button } from '../../components/common/Button';
-import { COLORS, SIZES, FONTS, SHADOWS } from '../../constants/colors';
-import { ERROR_MESSAGES } from '../../constants/messages';
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "../../context/AuthContext";
+import { Input } from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import { COLORS, SIZES, FONTS, SHADOWS } from "../../constants/colors";
+import { ERROR_MESSAGES } from "../../constants/messages";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { AuthStackParamList } from "../../navigation/AppNavigator";
 
 // ============================================================================
 // VALIDATION SCHEMA
@@ -44,9 +47,12 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export const LoginScreen: React.FC = () => {
   const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
-  console.log('ðŸ–¥ï¸ LoginScreen rendered');
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+
+  console.log("ðŸ–¥ï¸ LoginScreen rendered");
 
   // React Hook Form
   const {
@@ -56,8 +62,8 @@ export const LoginScreen: React.FC = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -65,22 +71,22 @@ export const LoginScreen: React.FC = () => {
   // HANDLERS
   // ============================================================================
   const onSubmit = async (data: LoginFormData) => {
-    console.log('ðŸ“¤ Login attempt:', { email: data.email, password: '***' });
+    console.log("ðŸ“¤ Login attempt:", { email: data.email, password: "***" });
 
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
       await signIn(data.email, data.password);
-      console.log('âœ… Login successful');
+      console.log("âœ… Login successful");
     } catch (error: any) {
-      console.error('âŒ Login error:', error);
+      console.error("âŒ Login error:", error);
 
       if (!error.statusCode || error.statusCode === 0) {
-        setErrorMessage('Erro de conexÃ£o. Verifique sua internet.');
+        setErrorMessage("Erro de conexÃ£o. Verifique sua internet.");
       } else {
         setErrorMessage(
-          error.message || 'Erro ao fazer login. Verifique suas credenciais.'
+          error.message || "Erro ao fazer login. Verifique suas credenciais.",
         );
       }
     } finally {
@@ -89,26 +95,18 @@ export const LoginScreen: React.FC = () => {
   };
 
   const handleForgotPassword = () => {
-    Alert.alert(
-      'Recuperar Senha',
-      'Funcionalidade em desenvolvimento',
-      [{ text: 'OK' }]
-    );
+    navigation.navigate("ForgotPassword");
   };
 
   const handleRegister = () => {
-    Alert.alert(
-      'Criar Conta',
-      'Funcionalidade em desenvolvimento',
-      [{ text: 'OK' }]
-    );
+    navigation.navigate("Register");
   };
 
   // ============================================================================
   // RENDER
   // ============================================================================
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       {/* Container opaco para prevenir ghost screen */}
       <View style={styles.opaqueContainer}>
         <LinearGradient
@@ -118,7 +116,7 @@ export const LoginScreen: React.FC = () => {
           end={{ x: 1, y: 1 }}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={styles.keyboardView}
           >
             <ScrollView
@@ -142,7 +140,7 @@ export const LoginScreen: React.FC = () => {
 
                 {/* Subtitle */}
                 <Text style={styles.appSubtitle}>
-                  Gerencie seu salÃ£o com facilidade
+                  Gerencie seu salão com facilidade
                 </Text>
               </View>
 
@@ -211,14 +209,12 @@ export const LoginScreen: React.FC = () => {
 
                 {/* Login Button */}
                 <Button
-                  title={isLoading ? 'Carregando...' : 'Entrar'}
+                  title={isLoading ? "Carregando..." : "Entrar"}
                   onPress={handleSubmit(onSubmit)}
                   variant="primary"
                   size="large"
-                  fullWidth={true}
                   loading={isLoading}
                   disabled={isLoading}
-                  style={styles.loginButton}
                 />
 
                 {/* Divider */}
@@ -228,23 +224,21 @@ export const LoginScreen: React.FC = () => {
                   <View style={styles.dividerLine} />
                 </View>
 
-                {/* Register Button */}
+                {/* Botão Criar Conta */}
                 <Button
                   title="Criar uma conta"
-                  onPress={handleRegister}
+                  onPress={() => navigation.navigate("Register")}
                   variant="outline"
                   size="large"
-                  fullWidth={true}
-                  disabled={isLoading}
                 />
               </View>
 
               {/* FOOTER SECTION */}
               <View style={styles.footerSection}>
                 <Text style={styles.footerText}>
-                  Ao continuar, vocÃª concorda com nossos{' '}
-                  <Text style={styles.footerLink}>Termos de Uso</Text> e{' '}
-                  <Text style={styles.footerLink}>PolÃ­tica de Privacidade</Text>
+                  Ao continuar, você concorda com nossos{" "}
+                  <Text style={styles.footerLink}>Termos de Uso</Text> e{" "}
+                  <Text style={styles.footerLink}>Política de Privacidade</Text>
                 </Text>
               </View>
             </ScrollView>
@@ -254,6 +248,8 @@ export const LoginScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+export default LoginScreen;
 
 // ============================================================================
 // STYLES
@@ -286,7 +282,7 @@ const styles = StyleSheet.create({
 
   // Header Section
   headerSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: SIZES.xxl,
   },
 
@@ -295,8 +291,8 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: SIZES.borderRadiusLarge,
     backgroundColor: COLORS.royal_blue,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: SIZES.lg,
   },
 
@@ -304,16 +300,16 @@ const styles = StyleSheet.create({
     fontSize: SIZES.h1,
     color: COLORS.white_pure,
     marginBottom: SIZES.sm,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
 
   appSubtitle: {
     fontSize: SIZES.h5,
     color: COLORS.grey_steel,
-    textAlign: 'center',
-    fontWeight: '400',
+    textAlign: "center",
+    fontWeight: "400",
   },
 
   // Form Section
@@ -322,14 +318,14 @@ const styles = StyleSheet.create({
   },
 
   forgotPasswordSection: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginBottom: SIZES.md,
   },
 
   forgotPasswordText: {
     fontSize: SIZES.small,
     color: COLORS.royal_blue,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 
   errorAlert: {
@@ -337,21 +333,21 @@ const styles = StyleSheet.create({
   },
 
   errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: SIZES.sm,
     padding: SIZES.md,
     borderRadius: SIZES.borderRadius,
-    backgroundColor: COLORS.vintage_red + '1A',
+    backgroundColor: COLORS.vintage_red + "1A",
     borderWidth: 1,
-    borderColor: COLORS.vintage_red + '4D',
+    borderColor: COLORS.vintage_red + "4D",
   },
 
   errorText: {
     fontSize: SIZES.small,
     color: COLORS.vintage_red,
     flex: 1,
-    fontWeight: '400',
+    fontWeight: "400",
   },
 
   loginButton: {
@@ -359,22 +355,22 @@ const styles = StyleSheet.create({
   },
 
   divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: SIZES.md,
   },
 
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: COLORS.grey_steel + '33',
+    backgroundColor: COLORS.grey_steel + "33",
   },
 
   dividerText: {
     fontSize: SIZES.small,
     color: COLORS.grey_steel,
     marginHorizontal: SIZES.md,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 
   // Footer Section
@@ -382,19 +378,19 @@ const styles = StyleSheet.create({
     marginTop: SIZES.xl,
     paddingTop: SIZES.lg,
     borderTopWidth: 1,
-    borderTopColor: COLORS.grey_steel + '1A',
+    borderTopColor: COLORS.grey_steel + "1A",
   },
 
   footerText: {
     fontSize: SIZES.small,
     color: COLORS.grey_steel,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 20,
-    fontWeight: '400',
+    fontWeight: "400",
   },
 
   footerLink: {
     color: COLORS.royal_blue,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

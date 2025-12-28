@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -6,9 +6,9 @@ import {
   Text,
   TouchableOpacity,
   TextInputProps,
-} from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SIZES, FONTS } from '../../constants/colors';
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { COLORS, SIZES, FONTS } from "../../constants/colors";
 
 interface InputProps extends TextInputProps {
   icon?: any;
@@ -26,13 +26,15 @@ export const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   // Type guard: garante booleano para secureTextEntry
-  const initialSecure = typeof initialSecureTextEntry === 'string'
-    ? initialSecureTextEntry === 'true'
-    : !!initialSecureTextEntry;
+  const initialSecure =
+    typeof initialSecureTextEntry === "string"
+      ? initialSecureTextEntry === "true"
+      : !!initialSecureTextEntry;
   // Type guard: garante booleano para showPasswordToggle
-  const showToggle = typeof showPasswordToggle === 'string'
-    ? showPasswordToggle === 'true'
-    : !!showPasswordToggle;
+  const showToggle =
+    typeof showPasswordToggle === "string"
+      ? showPasswordToggle === "true"
+      : !!showPasswordToggle;
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(!initialSecure);
 
@@ -61,7 +63,7 @@ export const Input: React.FC<InputProps> = ({
           {...props}
           secureTextEntry={!!isSecure}
           style={[styles.input, icon && styles.inputWithIcon]}
-          placeholderTextColor={COLORS.grey_steel + '99'}
+          placeholderTextColor={COLORS.grey_steel + "99"}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />
@@ -72,7 +74,7 @@ export const Input: React.FC<InputProps> = ({
             activeOpacity={0.7}
           >
             <MaterialCommunityIcons
-              name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+              name={showPassword ? "eye-outline" : "eye-off-outline"}
               size={SIZES.iconMedium}
               color={COLORS.grey_steel}
               style={styles.toggleIcon}
@@ -92,24 +94,24 @@ const styles = StyleSheet.create({
   },
 
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: SIZES.borderRadius,
-    backgroundColor: COLORS.midnight_navy + '4D',
+    backgroundColor: COLORS.midnight_navy + "4D",
     borderWidth: 1.5,
-    borderColor: COLORS.grey_steel + '4D',
+    borderColor: COLORS.grey_steel + "4D",
     paddingHorizontal: SIZES.md,
     height: 56,
   },
 
   inputWrapperFocused: {
     borderColor: COLORS.royal_blue,
-    backgroundColor: COLORS.midnight_navy + '66',
+    backgroundColor: COLORS.midnight_navy + "66",
   },
 
   inputWrapperError: {
     borderColor: COLORS.vintage_red,
-    backgroundColor: COLORS.vintage_red + '0D',
+    backgroundColor: COLORS.vintage_red + "0D",
   },
 
   icon: {
@@ -138,6 +140,6 @@ const styles = StyleSheet.create({
     color: COLORS.vintage_red,
     marginTop: SIZES.xs,
     paddingHorizontal: SIZES.xs,
-    fontWeight: '400',
+    fontWeight: "400",
   },
 });

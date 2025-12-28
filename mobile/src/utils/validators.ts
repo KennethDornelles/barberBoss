@@ -1,6 +1,6 @@
 // src/utils/validators.ts
-import { REGEX_PATTERNS, VALIDATION } from '../constants/validation';
-import { ERROR_MESSAGES } from '../constants/messages';
+import { REGEX_PATTERNS, VALIDATION } from "../constants/validation";
+import { ERROR_MESSAGES } from "../constants/messages";
 
 /**
  * Validate Email
@@ -61,7 +61,7 @@ export const validateName = (name: string): string | undefined => {
   }
 
   if (!REGEX_PATTERNS.NAME.test(name)) {
-    return 'Nome contém caracteres inválidos.';
+    return "Nome contém caracteres inválidos.";
   }
 
   return undefined;
@@ -76,7 +76,7 @@ export const validatePhone = (phone: string): string | undefined => {
   }
 
   // Remove formatting
-  const digitsOnly = phone.replace(/\D/g, '');
+  const digitsOnly = phone.replace(/\D/g, "");
 
   if (!REGEX_PATTERNS.PHONE_DIGITS_ONLY.test(digitsOnly)) {
     return ERROR_MESSAGES.INVALID_PHONE;
@@ -94,7 +94,7 @@ export const validateCPF = (cpf: string): string | undefined => {
   }
 
   // Remove formatting
-  const digitsOnly = cpf.replace(/\D/g, '');
+  const digitsOnly = cpf.replace(/\D/g, "");
 
   if (digitsOnly.length !== VALIDATION.CPF_LENGTH) {
     return ERROR_MESSAGES.INVALID_CPF;
@@ -137,7 +137,7 @@ export const validateCPF = (cpf: string): string | undefined => {
  * Validate Required Field
  */
 export const validateRequired = (value: any): string | undefined => {
-  if (!value || (typeof value === 'string' && !value.trim())) {
+  if (!value || (typeof value === "string" && !value.trim())) {
     return ERROR_MESSAGES.REQUIRED_FIELD;
   }
   return undefined;
@@ -148,7 +148,7 @@ export const validateRequired = (value: any): string | undefined => {
  */
 export const validateMinLength = (
   value: string,
-  minLength: number
+  minLength: number,
 ): string | undefined => {
   if (!value) {
     return ERROR_MESSAGES.REQUIRED_FIELD;
@@ -166,7 +166,7 @@ export const validateMinLength = (
  */
 export const validateMaxLength = (
   value: string,
-  maxLength: number
+  maxLength: number,
 ): string | undefined => {
   if (value && value.length > maxLength) {
     return `Não pode ter mais de ${maxLength} caracteres.`;
@@ -221,7 +221,7 @@ export const validateTime = (time: string): string | undefined => {
   }
 
   if (!REGEX_PATTERNS.TIME.test(time)) {
-    return 'Formato de horário inválido. Use HH:mm.';
+    return "Formato de horário inválido. Use HH:mm.";
   }
 
   return undefined;
@@ -236,7 +236,7 @@ export const validateDate = (date: string): string | undefined => {
   }
 
   if (!REGEX_PATTERNS.DATE.test(date)) {
-    return 'Formato de data inválido. Use DD/MM/YYYY.';
+    return "Formato de data inválido. Use DD/MM/YYYY.";
   }
 
   return undefined;

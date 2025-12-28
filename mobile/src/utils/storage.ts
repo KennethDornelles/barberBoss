@@ -1,9 +1,9 @@
 // src/utils/storage.ts
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
  * Storage Helper Functions
- * 
+ *
  * Wrappers around AsyncStorage with error handling and type safety
  */
 
@@ -39,20 +39,33 @@ export const getData = async <T>(key: string): Promise<T | null> => {
     try {
       const parsedValue = JSON.parse(jsonValue);
       // Type guard para booleanos salvos como string
-      if (typeof parsedValue === 'string' && (parsedValue === 'true' || parsedValue === 'false')) {
-        console.warn(`⚠️ Valor booleano salvo como string para ${key}:`, parsedValue);
-        return (parsedValue === 'true') as unknown as T;
+      if (
+        typeof parsedValue === "string" &&
+        (parsedValue === "true" || parsedValue === "false")
+      ) {
+        console.warn(
+          `⚠️ Valor booleano salvo como string para ${key}:`,
+          parsedValue,
+        );
+        return (parsedValue === "true") as unknown as T;
       }
-      console.log(`✅ Retrieved from storage: ${key}`, typeof parsedValue, parsedValue);
+      console.log(
+        `✅ Retrieved from storage: ${key}`,
+        typeof parsedValue,
+        parsedValue,
+      );
       return parsedValue as T;
     } catch (parseError) {
       // Se JSON.parse falhar, retorna string
       console.warn(`⚠️ Could not parse JSON for ${key}, returning raw value`);
       console.log(`Type of raw value:`, typeof jsonValue);
       // Type guard para booleanos salvos diretamente como string
-      if (jsonValue === 'true' || jsonValue === 'false') {
-        console.warn(`⚠️ Valor booleano salvo como string (raw) para ${key}:`, jsonValue);
-        return (jsonValue === 'true') as unknown as T;
+      if (jsonValue === "true" || jsonValue === "false") {
+        console.warn(
+          `⚠️ Valor booleano salvo como string (raw) para ${key}:`,
+          jsonValue,
+        );
+        return (jsonValue === "true") as unknown as T;
       }
       return jsonValue as unknown as T;
     }
@@ -81,9 +94,9 @@ export const removeData = async (key: string): Promise<void> => {
 export const clearStorage = async (): Promise<void> => {
   try {
     await AsyncStorage.clear();
-    console.log('✅ Storage cleared');
+    console.log("✅ Storage cleared");
   } catch (error) {
-    console.error('❌ Error clearing storage:', error);
+    console.error("❌ Error clearing storage:", error);
     throw error;
   }
 };
@@ -110,7 +123,7 @@ export const getAllKeys = async (): Promise<string[]> => {
     console.log(`✅ Retrieved ${keys.length} keys from storage`);
     return [...keys];
   } catch (error) {
-    console.error('❌ Error getting all keys from storage:', error);
+    console.error("❌ Error getting all keys from storage:", error);
     return [];
   }
 };
@@ -119,13 +132,13 @@ export const getAllKeys = async (): Promise<string[]> => {
  * Get multiple items from storage
  */
 export const getMultipleData = async <T>(
-  keys: string[]
+  keys: string[],
 ): Promise<Record<string, T | null>> => {
   try {
     const values = await AsyncStorage.multiGet(keys);
-    
+
     const result: Record<string, T | null> = {};
-    
+
     values.forEach(([key, value]) => {
       if (value !== null) {
         try {
@@ -142,7 +155,7 @@ export const getMultipleData = async <T>(
     console.log(`✅ Retrieved ${keys.length} items from storage`);
     return result;
   } catch (error) {
-    console.error('❌ Error getting multiple items from storage:', error);
+    console.error("❌ Error getting multiple items from storage:", error);
     return {};
   }
 };
@@ -151,17 +164,16 @@ export const getMultipleData = async <T>(
  * Save multiple items to storage
  */
 export const saveMultipleData = async <T>(
-  data: Record<string, T>
+  data: Record<string, T>,
 ): Promise<void> => {
   try {
-    const pairs: [string, string][] = Object.entries(data).map(([key, value]) => [
-      key,
-      JSON.stringify(value),
-    ]);
+    const pairs: [string, string][] = Object.entries(data).map(
+      ([key, value]) => [key, JSON.stringify(value)],
+    );
     await AsyncStorage.multiSet(pairs);
     console.log(`✅ Saved ${pairs.length} items to storage`);
   } catch (error) {
-    console.error('❌ Error saving multiple items to storage:', error);
+    console.error("❌ Error saving multiple items to storage:", error);
     throw error;
   }
 };
@@ -174,7 +186,7 @@ export const removeMultipleData = async (keys: string[]): Promise<void> => {
     await AsyncStorage.multiRemove(keys);
     console.log(`✅ Removed ${keys.length} items from storage`);
   } catch (error) {
-    console.error('❌ Error removing multiple items from storage:', error);
+    console.error("❌ Error removing multiple items from storage:", error);
     throw error;
   }
 };

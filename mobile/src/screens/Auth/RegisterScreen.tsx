@@ -1,5 +1,5 @@
 // src/screens/Auth/RegisterScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,20 +9,20 @@ import {
   Platform,
   TouchableOpacity,
   Animated,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '../../context/AuthContext';
-import { Input } from '../../components/common/Input';
-import { Button } from '../../components/common/Button';
-import { COLORS, SIZES, FONTS, SHADOWS } from '../../constants/colors';
-import { ERROR_MESSAGES } from '../../constants/messages';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "../../context/AuthContext";
+import { Input } from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import { COLORS, SIZES, FONTS, SHADOWS } from "../../constants/colors";
+import { ERROR_MESSAGES } from "../../constants/messages";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
 
 // ============================================================================
 // TYPES
@@ -34,17 +34,17 @@ type AuthStackParamList = {
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
-  'Register'
+  "Register"
 >;
 
 // ============================================================================
-// VALIDATION SCHEMA
+// VALIDATION SCHEMA (movido para fora do componente)
 // ============================================================================
 const registerSchema = z.object({
   name: z
     .string()
     .min(1, ERROR_MESSAGES.REQUIRED_FIELD)
-    .min(3, 'Nome deve ter pelo menos 3 caracteres'),
+    .min(3, "Nome deve ter pelo menos 3 caracteres"),
   email: z
     .string()
     .min(1, ERROR_MESSAGES.REQUIRED_FIELD)
@@ -60,15 +60,16 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 // ============================================================================
 // REGISTER SCREEN COMPONENT
 // ============================================================================
-export const RegisterScreen: React.FC = () => {
+const RegisterScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<RegisterScreenNavigationProp>();
   const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Animation values
-  const fadeAnim = new Animated.Value(0);
-  const slideAnim = new Animated.Value(20);
+  // Animation values - inicializados com useRef para evitar re-renders
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(20)).current;
 
   // React Hook Form
   const {
@@ -78,9 +79,9 @@ export const RegisterScreen: React.FC = () => {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      password: '',
+      name: "",
+      email: "",
+      password: "",
     },
   });
 
@@ -100,34 +101,34 @@ export const RegisterScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   // ============================================================================
   // HANDLERS
   // ============================================================================
   const onSubmit = async (data: RegisterFormData) => {
-    console.log('ðŸ“ Register attempt:', { 
-      name: data.name, 
-      email: data.email, 
-      password: '***' 
+    console.log("📝 Register attempt:", {
+      name: data.name,
+      email: data.email,
+      password: "***",
     });
 
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
       await signUp(data.email, data.password, data.name);
-      console.log('âœ… Registration successful');
-      // O AuthContext jÃ¡ faz o login automÃ¡tico apÃ³s o registro
-      // A navegaÃ§Ã£o serÃ¡ automÃ¡tica via NavigationContainer
+      console.log("✅ Registration successful");
+      // O AuthContext já faz o login automático após o registro
+      // A navegação será automática via NavigationContainer
     } catch (error: any) {
-      console.error('âŒ Registration error:', error);
+      console.error("❌ Registration error:", error);
 
       if (!error.statusCode || error.statusCode === 0) {
-        setErrorMessage('Erro de conexÃ£o. Verifique sua internet.');
+        setErrorMessage("Erro de conexão. Verifique sua internet.");
       } else {
         setErrorMessage(
-          error.message || 'Erro ao criar conta. Tente novamente.'
+          error.message || "Erro ao criar conta. Tente novamente.",
         );
       }
     } finally {
@@ -136,26 +137,32 @@ export const RegisterScreen: React.FC = () => {
   };
 
   const handleGoToLogin = () => {
-    navigation.navigate('Login');
+    navigation.navigate("Login");
   };
 
   // ============================================================================
   // RENDER
   // ============================================================================
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <View style={styles.container}>
       <LinearGradient
-        colors={[COLORS.midnight_navy + 'F2', COLORS.slate_grey + '80']}
+        colors={[COLORS.midnight_navy + "F2", COLORS.slate_grey + "80"]}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.keyboardView}
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              {
+                paddingTop: insets.top + (SIZES.xl || 32),
+                paddingBottom: insets.bottom + (SIZES.xl || 32),
+              },
+            ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -186,7 +193,7 @@ export const RegisterScreen: React.FC = () => {
               <View style={[styles.logoContainer, SHADOWS.glowPrimary]}>
                 <MaterialCommunityIcons
                   name="account-plus-outline"
-                  size={SIZES.iconXLarge}
+                  size={SIZES.iconXLarge || 48}
                   color={COLORS.white_pure}
                 />
               </View>
@@ -196,7 +203,7 @@ export const RegisterScreen: React.FC = () => {
 
               {/* Subtitle */}
               <Text style={styles.pageSubtitle}>
-                Junte-se ao BarberBoss e gerencie seu negÃ³cio
+                Junte-se ao BarberBoss e gerencie seu negócio
               </Text>
             </Animated.View>
 
@@ -250,7 +257,7 @@ export const RegisterScreen: React.FC = () => {
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
                     icon="lock"
-                    placeholder="Senha (mÃ­nimo 6 caracteres)"
+                    placeholder="Senha (mínimo 6 caracteres)"
                     showPasswordToggle={true}
                     secureTextEntry={true}
                     value={value}
@@ -277,11 +284,10 @@ export const RegisterScreen: React.FC = () => {
 
               {/* Register Button */}
               <Button
-                title={isLoading ? 'Criando conta...' : 'Cadastrar'}
+                title={isLoading ? "Criando conta..." : "Cadastrar"}
                 onPress={handleSubmit(onSubmit)}
                 variant="primary"
                 size="large"
-                fullWidth={true}
                 loading={isLoading}
                 disabled={isLoading}
                 style={styles.registerButton}
@@ -296,11 +302,10 @@ export const RegisterScreen: React.FC = () => {
 
               {/* Login Button */}
               <Button
-                title="JÃ¡ tenho uma conta"
+                title="Já tenho uma conta"
                 onPress={handleGoToLogin}
                 variant="outline"
                 size="large"
-                fullWidth={true}
                 disabled={isLoading}
               />
             </Animated.View>
@@ -308,15 +313,15 @@ export const RegisterScreen: React.FC = () => {
             {/* FOOTER SECTION */}
             <View style={styles.footerSection}>
               <Text style={styles.footerText}>
-                Ao criar uma conta, vocÃª concorda com nossos{' '}
-                <Text style={styles.footerLink}>Termos de Uso</Text> e{' '}
-                <Text style={styles.footerLink}>PolÃ­tica de Privacidade</Text>
+                Ao criar uma conta, você concorda com nossos{" "}
+                <Text style={styles.footerLink}>Termos de Uso</Text> e{" "}
+                <Text style={styles.footerLink}>Política de Privacidade</Text>
               </Text>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -324,7 +329,7 @@ export const RegisterScreen: React.FC = () => {
 // STYLES
 // ============================================================================
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: COLORS.midnight_navy,
   },
@@ -339,50 +344,52 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: SIZES.lg,
-    paddingVertical: SIZES.xl,
+    paddingHorizontal: SIZES.lg || 24,
   },
 
   // Header Section
   headerSection: {
-    alignItems: 'center',
-    marginBottom: SIZES.xl,
-    position: 'relative',
+    alignItems: "center",
+    marginBottom: SIZES.xl || 32,
+    position: "relative",
   },
 
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     zIndex: 10,
-    padding: SIZES.sm,
+    padding: SIZES.sm || 12,
   },
 
   logoContainer: {
     width: 100,
     height: 100,
-    borderRadius: SIZES.borderRadiusLarge,
+    borderRadius: SIZES.borderRadiusLarge || 20,
     backgroundColor: COLORS.royal_blue,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SIZES.lg,
-    marginTop: SIZES.xl,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: SIZES.lg || 24,
+    marginTop: SIZES.xl || 32,
   },
 
   pageTitle: {
-    ...FONTS.heading,
-    fontSize: SIZES.h2,
+    fontFamily: "Inter_600SemiBold",
+    fontWeight: "600",
+    fontSize: 28,
     color: COLORS.white_pure,
-    marginBottom: SIZES.sm,
-    textTransform: 'uppercase',
+    marginBottom: SIZES.xs || 8,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
   },
 
   pageSubtitle: {
-    ...FONTS.body,
-    fontSize: SIZES.body,
+    fontFamily: "Inter_400Regular",
+    fontWeight: "400",
+    fontSize: 16,
     color: COLORS.grey_steel,
-    textAlign: 'center',
-    paddingHorizontal: SIZES.lg,
+    textAlign: "center",
+    paddingHorizontal: SIZES.md || 16,
   },
 
   // Form Section
@@ -391,68 +398,73 @@ const styles = StyleSheet.create({
   },
 
   errorAlert: {
-    marginBottom: SIZES.md,
+    marginBottom: SIZES.md || 16,
   },
 
   errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SIZES.sm,
-    padding: SIZES.md,
-    borderRadius: SIZES.borderRadius,
-    backgroundColor: COLORS.vintage_red + '1A',
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SIZES.sm || 12,
+    padding: SIZES.md || 16,
+    borderRadius: SIZES.borderRadius || 8,
+    backgroundColor: COLORS.vintage_red + "1A",
     borderWidth: 1,
-    borderColor: COLORS.vintage_red + '4D',
+    borderColor: COLORS.vintage_red + "4D",
   },
 
   errorText: {
-    ...FONTS.bodyMedium,
-    fontSize: SIZES.small,
+    fontFamily: "Inter_400Regular",
+    fontWeight: "400",
+    fontSize: SIZES.small || 12,
     color: COLORS.vintage_red,
     flex: 1,
   },
 
   registerButton: {
-    marginBottom: SIZES.md,
+    marginBottom: SIZES.md || 16,
   },
 
   divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: SIZES.md,
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: SIZES.md || 16,
   },
 
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: COLORS.grey_steel + '33',
+    backgroundColor: COLORS.grey_steel + "33",
   },
 
   dividerText: {
-    ...FONTS.bodyMedium,
-    fontSize: SIZES.small,
+    fontFamily: "Inter_500Medium",
+    fontWeight: "500",
     color: COLORS.grey_steel,
-    marginHorizontal: SIZES.md,
+    marginHorizontal: SIZES.md || 16,
   },
 
   // Footer Section
   footerSection: {
-    marginTop: SIZES.xl,
-    paddingTop: SIZES.lg,
+    marginTop: SIZES.xl || 32,
+    paddingTop: SIZES.lg || 24,
     borderTopWidth: 1,
-    borderTopColor: COLORS.grey_steel + '1A',
+    borderTopColor: COLORS.grey_steel + "1A",
   },
 
   footerText: {
-    ...FONTS.body,
-    fontSize: SIZES.small,
+    fontFamily: "Inter_400Regular",
+    fontWeight: "400",
+    fontSize: SIZES.small || 12,
     color: COLORS.grey_steel,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 20,
   },
 
   footerLink: {
-    ...FONTS.bodySemiBold,
+    fontFamily: "Inter_600SemiBold",
+    fontWeight: "600",
     color: COLORS.royal_blue,
   },
 });
+
+export default RegisterScreen;

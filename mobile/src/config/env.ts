@@ -1,12 +1,12 @@
 // src/config/env.ts
 const ENV = {
   dev: {
-    apiUrl: 'edacious-closer-catrice.ngrok-free.dev', // Seu backend local
+    apiUrl: "edacious-closer-catrice.ngrok-free.dev", // Seu backend local
     // apiUrl: 'https://barberboss.loca.lt', // LocalTunnel
     timeout: 30000,
   },
   prod: {
-    apiUrl: 'edacious-closer-catrice.ngrok-free.dev', // Produção futura
+    apiUrl: "edacious-closer-catrice.ngrok-free.dev", // Produção futura
     timeout: 30000,
   },
 };

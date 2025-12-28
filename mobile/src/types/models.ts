@@ -1,10 +1,16 @@
 // src/types/models.ts
-import { Role, AppointmentStatus, BlockType } from './enums';
-import { formatDate, formatTime, formatDateTime, formatDuration, formatCurrency } from '../utils/formatters';
+import { Role, AppointmentStatus, BlockType } from "./enums";
+import {
+  formatDate,
+  formatTime,
+  formatDateTime,
+  formatDuration,
+  formatCurrency,
+} from "../utils/formatters";
 
 /**
  * User Model
- * 
+ *
  * Client-side model with helper methods
  */
 export class UserModel {
@@ -22,8 +28,14 @@ export class UserModel {
     this.email = data.email;
     this.phone = data.phone;
     this.role = data.role as Role;
-    this.createdAt = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt);
-    this.updatedAt = data.updatedAt instanceof Date ? data.updatedAt : new Date(data.updatedAt);
+    this.createdAt =
+      data.createdAt instanceof Date
+        ? data.createdAt
+        : new Date(data.createdAt);
+    this.updatedAt =
+      data.updatedAt instanceof Date
+        ? data.updatedAt
+        : new Date(data.updatedAt);
   }
 
   isAdmin(): boolean {
@@ -40,9 +52,9 @@ export class UserModel {
 
   getInitials(): string {
     return this.name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .substring(0, 2);
   }
@@ -65,11 +77,18 @@ export class ServiceModel {
     this.id = data.id;
     this.name = data.name;
     this.description = data.description;
-    this.price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
+    this.price =
+      typeof data.price === "string" ? parseFloat(data.price) : data.price;
     this.durationMin = data.durationMin;
     this.active = data.active ?? true;
-    this.createdAt = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt);
-    this.updatedAt = data.updatedAt instanceof Date ? data.updatedAt : new Date(data.updatedAt);
+    this.createdAt =
+      data.createdAt instanceof Date
+        ? data.createdAt
+        : new Date(data.createdAt);
+    this.updatedAt =
+      data.updatedAt instanceof Date
+        ? data.updatedAt
+        : new Date(data.updatedAt);
   }
 
   getFormattedPrice(): string {
@@ -111,8 +130,10 @@ export class AppointmentModel {
 
   constructor(data: any) {
     this.id = data.id;
-    this.startsAt = data.startsAt instanceof Date ? data.startsAt : new Date(data.startsAt);
-    this.endsAt = data.endsAt instanceof Date ? data.endsAt : new Date(data.endsAt);
+    this.startsAt =
+      data.startsAt instanceof Date ? data.startsAt : new Date(data.startsAt);
+    this.endsAt =
+      data.endsAt instanceof Date ? data.endsAt : new Date(data.endsAt);
     this.status = data.status as AppointmentStatus;
     this.barberId = data.barberId;
     this.barber = data.barber ? new UserModel(data.barber) : undefined;
@@ -121,16 +142,22 @@ export class AppointmentModel {
     this.clientName = data.clientName;
     this.serviceId = data.serviceId;
     this.service = data.service ? new ServiceModel(data.service) : undefined;
-    this.createdAt = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt);
-    this.updatedAt = data.updatedAt instanceof Date ? data.updatedAt : new Date(data.updatedAt);
+    this.createdAt =
+      data.createdAt instanceof Date
+        ? data.createdAt
+        : new Date(data.createdAt);
+    this.updatedAt =
+      data.updatedAt instanceof Date
+        ? data.updatedAt
+        : new Date(data.updatedAt);
   }
 
   getClientName(): string {
-    return this.user?.name || this.clientName || 'Cliente sem nome';
+    return this.user?.name || this.clientName || "Cliente sem nome";
   }
 
   getBarberName(): string {
-    return this.barber?.name || 'Barbeiro não definido';
+    return this.barber?.name || "Barbeiro não definido";
   }
 
   getFormattedDate(): string {
@@ -148,7 +175,9 @@ export class AppointmentModel {
   }
 
   getDurationMinutes(): number {
-    return Math.round((this.endsAt.getTime() - this.startsAt.getTime()) / 60000);
+    return Math.round(
+      (this.endsAt.getTime() - this.startsAt.getTime()) / 60000,
+    );
   }
 
   isPast(): boolean {
@@ -163,14 +192,16 @@ export class AppointmentModel {
   canBeCanceled(): boolean {
     return (
       !this.isPast() &&
-      (this.status === AppointmentStatus.PENDING || this.status === AppointmentStatus.CONFIRMED)
+      (this.status === AppointmentStatus.PENDING ||
+        this.status === AppointmentStatus.CONFIRMED)
     );
   }
 
   canBeEdited(): boolean {
     return (
       !this.isPast() &&
-      (this.status === AppointmentStatus.PENDING || this.status === AppointmentStatus.CONFIRMED)
+      (this.status === AppointmentStatus.PENDING ||
+        this.status === AppointmentStatus.CONFIRMED)
     );
   }
 }
@@ -194,17 +225,23 @@ export class SettingsModel {
 
   constructor(data: any) {
     this.id = data.id;
-    this.businessName = data.businessName || 'Barber Boss';
-    this.openTime = data.openTime || '08:00';
-    this.closeTime = data.closeTime || '18:00';
+    this.businessName = data.businessName || "Barber Boss";
+    this.openTime = data.openTime || "08:00";
+    this.closeTime = data.closeTime || "18:00";
     this.workingDays = data.workingDays || [1, 2, 3, 4, 5, 6];
     this.slotIntervalMin = data.slotIntervalMin || 15;
     this.maxAdvanceDays = data.maxAdvanceDays || 30;
     this.minAdvanceHours = data.minAdvanceHours || 2;
     this.enableReminders = data.enableReminders ?? false;
     this.reminderHoursBefore = data.reminderHoursBefore || 24;
-    this.createdAt = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt);
-    this.updatedAt = data.updatedAt instanceof Date ? data.updatedAt : new Date(data.updatedAt);
+    this.createdAt =
+      data.createdAt instanceof Date
+        ? data.createdAt
+        : new Date(data.createdAt);
+    this.updatedAt =
+      data.updatedAt instanceof Date
+        ? data.updatedAt
+        : new Date(data.updatedAt);
   }
 
   getBusinessHours(): string {
@@ -216,14 +253,14 @@ export class SettingsModel {
   }
 
   getOpeningTime(date: Date = new Date()): Date {
-    const [hours, minutes] = this.openTime.split(':').map(Number);
+    const [hours, minutes] = this.openTime.split(":").map(Number);
     const openingTime = new Date(date);
     openingTime.setHours(hours, minutes, 0, 0);
     return openingTime;
   }
 
   getClosingTime(date: Date = new Date()): Date {
-    const [hours, minutes] = this.closeTime.split(':').map(Number);
+    const [hours, minutes] = this.closeTime.split(":").map(Number);
     const closingTime = new Date(date);
     closingTime.setHours(hours, minutes, 0, 0);
     return closingTime;
@@ -279,13 +316,21 @@ export class TimeBlockModel {
     this.id = data.id;
     this.type = data.type as BlockType;
     this.reason = data.reason;
-    this.startsAt = data.startsAt instanceof Date ? data.startsAt : new Date(data.startsAt);
-    this.endsAt = data.endsAt instanceof Date ? data.endsAt : new Date(data.endsAt);
+    this.startsAt =
+      data.startsAt instanceof Date ? data.startsAt : new Date(data.startsAt);
+    this.endsAt =
+      data.endsAt instanceof Date ? data.endsAt : new Date(data.endsAt);
     this.isRecurring = data.isRecurring ?? false;
     this.recurringDays = data.recurringDays || [];
     this.active = data.active ?? true;
-    this.createdAt = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt);
-    this.updatedAt = data.updatedAt instanceof Date ? data.updatedAt : new Date(data.updatedAt);
+    this.createdAt =
+      data.createdAt instanceof Date
+        ? data.createdAt
+        : new Date(data.createdAt);
+    this.updatedAt =
+      data.updatedAt instanceof Date
+        ? data.updatedAt
+        : new Date(data.updatedAt);
   }
 
   getFormattedDateRange(): string {
@@ -339,6 +384,8 @@ export class TimeBlockModel {
   }
 
   getDurationMinutes(): number {
-    return Math.round((this.endsAt.getTime() - this.startsAt.getTime()) / 60000);
+    return Math.round(
+      (this.endsAt.getTime() - this.startsAt.getTime()) / 60000,
+    );
   }
 }
