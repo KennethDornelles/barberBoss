@@ -28,11 +28,17 @@ console.log("🔧 API Client Configuration:");
 console.log("  Base URL:", API_BASE_URL);
 console.log("  Fallback:", API_BASE_URL_FALLBACK);
 console.log("  Timeout:", API_TIMEOUT);
+console.log("  ⚠️  ATENÇÃO: Se Base URL não tem /api, adicione no .env!");
 
 // Função para criar instância do Axios com fallback
 function createApiClient(baseURL: string): AxiosInstance {
+  // 🔥 Garantir que /api está presente
+  const finalURL = baseURL.endsWith('/api') ? baseURL : `${baseURL}/api`;
+  
+  console.log("🌐 Creating API client with URL:", finalURL);
+  
   return axios.create({
-    baseURL,
+    baseURL: finalURL,
     timeout: parseInt(API_TIMEOUT || "15000"),
     headers: {
       "Content-Type": "application/json",
@@ -53,9 +59,15 @@ apiClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
         console.log("🔑 Token attached");
       }
-      console.log(
-        `📤 [${timestamp}] ${config.method?.toUpperCase()} ${config.url}`,
-      );
+      
+      // 🔥 DEBUG CRÍTICO - Mostra URL completa
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("🌐 Full request URL:", (config.baseURL || '') + (config.url || ''));
+      console.log("📍 BaseURL:", config.baseURL);
+      console.log("📍 Path:", config.url);
+      console.log(`📤 [${timestamp}] ${config.method?.toUpperCase()}`);
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      
       return config;
     } catch (error) {
       console.error("❌ Erro ao adicionar token:", error);
@@ -91,11 +103,15 @@ apiClient.interceptors.response.use(
     // Categorizar erro
     if (error.response) {
       // Erro HTTP
+      console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
       console.error(`❌ [${timestamp}] HTTP ${status}`);
       console.error("📍 URL:", url);
+      console.error("🌐 Full URL:", (error.config?.baseURL || '') + (url || ''));
       console.error("📦 Error data:", error.response.data);
+      console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      
       if (status === 401) {
-        console.log("🔑 Token inválido - Fazendo logout...");
+        console.log("🔒 Token inválido - Fazendo logout...");
         await removeToken();
       }
     } else if (error.request) {

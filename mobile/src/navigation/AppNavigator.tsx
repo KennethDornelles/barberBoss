@@ -18,6 +18,10 @@ import RegisterScreen from "../screens/Auth/RegisterScreen";
 import ForgotPasswordScreen from "../screens/Auth/ForgotPasswordScreen";
 // ResetPasswordScreen removido - não existe (funcionalidade está dentro do ForgotPasswordScreen)
 
+// Dashboard Screens - NOVAS TELAS
+import AppointmentsListScreen from "../screens/Dashboard/AppointmentsListScreen";
+import CreateAppointmentScreen from "../screens/Dashboard/CreateAppointmentScreen";
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -28,8 +32,9 @@ export type AuthStackParamList = {
 };
 
 export type MainStackParamList = {
-  Home: undefined;
-  // Adicione suas outras telas principais aqui
+  AppointmentsList: undefined;
+  CreateAppointment: { appointmentId?: string } | undefined;
+  // Outras telas principais aqui
 };
 
 export type RootStackParamList = {
@@ -63,44 +68,27 @@ const AuthNavigator: React.FC = () => {
 };
 
 // ============================================================================
-// MAIN NAVIGATOR (Placeholder)
+// MAIN NAVIGATOR (Atualizado)
 // ============================================================================
-// TODO: Substituir pelo seu MainNavigator real com TabNavigator, etc.
 const MainNavigator: React.FC = () => {
   const { signOut, user } = useAuth();
 
   return (
     <MainStack.Navigator
+      initialRouteName="AppointmentsList"
       screenOptions={{
         headerShown: false,
       }}
     >
-      <MainStack.Screen name="Home">
-        {() => (
-          <View style={styles.placeholderContainer}>
-            <Text style={styles.placeholderTitle}>
-              🎉 Bem-vindo ao BarberBoss!
-            </Text>
-            <Text style={styles.placeholderSubtext}>
-              Você está autenticado como:
-            </Text>
-            <Text style={styles.placeholderUserName}>
-              {user?.name || "Usuário"}
-            </Text>
-            <Text style={styles.placeholderUserEmail}>{user?.email}</Text>
-            <Text style={styles.placeholderInfo}>
-              Substitua este componente pelo seu MainNavigator real
-            </Text>
-            <TouchableOpacity
-              style={styles.signOutButton}
-              onPress={signOut}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.signOutButtonText}>Sair</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </MainStack.Screen>
+      <MainStack.Screen
+        name="AppointmentsList"
+        component={AppointmentsListScreen}
+      />
+      <MainStack.Screen
+        name="CreateAppointment"
+        component={CreateAppointmentScreen}
+      />
+      {/* Outras telas principais aqui */}
     </MainStack.Navigator>
   );
 };

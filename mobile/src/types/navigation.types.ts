@@ -33,10 +33,10 @@ export type MainTabParamList = {
  * Appointments Stack Navigator
  */
 export type AppointmentsStackParamList = {
-  AppointmentList: undefined;
-  AppointmentDetail: { appointmentId: string };
-  CreateAppointment: undefined;
-  EditAppointment: { appointmentId: string };
+  AppointmentsList: undefined;
+  CreateAppointment: { appointmentId?: string } | undefined;
+  AppointmentDetail?: { appointmentId: string };
+  EditAppointment?: { appointmentId: string };
 };
 
 /**

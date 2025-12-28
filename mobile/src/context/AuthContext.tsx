@@ -41,46 +41,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const restoreToken = useCallback(async () => {
-    console.log("ðŸ”„ Starting token restoration...");
+    console.log("🔄 Starting token restoration...");
     setIsLoading(true);
     setIsRestoring(true);
 
     try {
-      // Adiciona delay mÃ­nimo para evitar flash
+      // Adiciona delay mínimo para evitar flash
       const [token] = await Promise.all([
         getToken(),
         new Promise((resolve) => setTimeout(resolve, 500)),
       ]);
 
-      console.log("ðŸ“¦ Token found:", !!token);
+      console.log("📦 Token found:", !!token);
 
       if (token) {
         // Token existe, validar fazendo uma request ao backend
         try {
-          const response = await apiClient.get("/api/auth/me");
+          // ✅ CORRIGIDO - removido /api/
+          const response = await apiClient.get("/auth/me");
           const userData = response.data;
           setUser(userData);
           console.log(
-            "âœ… Token vÃ¡lido, usuÃ¡rio autenticado:",
+            "✅ Token válido, usuário autenticado:",
             userData.email,
           );
         } catch (error) {
-          console.log("âŒ Token invÃ¡lido, removendo...");
+          console.log("❌ Token inválido, removendo...");
           await removeToken();
           setUser(null);
         }
       } else {
-        console.log("â„¹ï¸ No stored token found");
+        console.log("ℹ️ No stored token found");
       }
     } catch (error) {
-      console.error("âŒ Failed to restore token:", error);
+      console.error("❌ Failed to restore token:", error);
       await removeToken();
     } finally {
-      // Delay adicional para garantir transiÃ§Ã£o suave
+      // Delay adicional para garantir transição suave
       setTimeout(() => {
         setIsLoading(false);
         setIsRestoring(false);
-        console.log("âœ… Token restoration complete");
+        console.log("✅ Token restoration complete");
       }, 300);
     }
   }, []);
@@ -88,8 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signIn = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      console.log("ðŸ“¤ Attempting login...");
-      const response = await apiClient.post("/api/auth/login", {
+      console.log("📤 Attempting login...");
+      // ✅ CORRIGIDO - removido /api/
+      const response = await apiClient.post("/auth/login", {
         email,
         password,
       });
@@ -98,9 +100,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       await setToken(access_token);
       setUser(userData);
-      console.log("âœ… Login successful");
+      console.log("✅ Login successful");
     } catch (error: any) {
-      console.error("âŒ Login error:", error);
+      console.error("❌ Login error:", error);
       throw {
         statusCode: error.statusCode || 500,
         message: error.message || "Erro ao fazer login",
@@ -114,8 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async (email: string, password: string, name: string) => {
       setIsLoading(true);
       try {
-        console.log("ðŸ“¤ Attempting signup...");
-        const response = await apiClient.post("/api/auth/register", {
+        console.log("📤 Attempting signup...");
+        // ✅ CORRIGIDO - removido /api/
+        const response = await apiClient.post("/auth/register", {
           email,
           password,
           name,
@@ -125,9 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         await setToken(access_token);
         setUser(userData);
-        console.log("âœ… Signup successful");
+        console.log("✅ Signup successful");
       } catch (error: any) {
-        console.error("âŒ Signup error:", error);
+        console.error("❌ Signup error:", error);
         throw {
           statusCode: error.statusCode || 500,
           message: error.message || "Erro ao criar conta",
@@ -159,7 +162,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const forgotPassword = useCallback(async (email: string) => {
     setIsLoading(true);
     try {
-      await apiClient.post("/api/auth/forgot-password", { email });
+      // ✅ CORRIGIDO - removido /api/
+      await apiClient.post("/auth/forgot-password", { email });
       console.log("Solicitação de recuperação de senha enviada");
     } catch (error) {
       console.error("Erro ao solicitar recuperação de senha:", error);
