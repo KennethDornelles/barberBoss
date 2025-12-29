@@ -39,8 +39,9 @@ type RegisterScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 // ============================================================================
-// VALIDATION SCHEMA (movido para fora do componente)
+// VALIDATION SCHEMA
 // ============================================================================
+const phoneRegex = /^\(?\d{2}\)?[\s-]?9?\d{4}-?\d{4}$/;
 const registerSchema = z.object({
   name: z
     .string()
@@ -54,6 +55,11 @@ const registerSchema = z.object({
     .string()
     .min(1, ERROR_MESSAGES.REQUIRED_FIELD)
     .min(6, ERROR_MESSAGES.PASSWORD_TOO_SHORT),
+  phone: z
+    .string()
+    .min(1, ERROR_MESSAGES.REQUIRED_FIELD)
+    .min(10, "Telefone deve ter pelo menos 10 dígitos")
+    .regex(phoneRegex, "Telefone inválido. Use o formato (99) 99999-9999"),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -68,7 +74,7 @@ const RegisterScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Animation values - inicializados com useRef para evitar re-renders
+  // Animation values
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(20)).current;
 
@@ -83,12 +89,10 @@ const RegisterScreen: React.FC = () => {
       name: "",
       email: "",
       password: "",
+      phone: "",
     },
   });
 
-  // ============================================================================
-  // LIFECYCLE & ANIMATIONS
-  // ============================================================================
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -104,27 +108,13 @@ const RegisterScreen: React.FC = () => {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  // ============================================================================
-  // HANDLERS
-  // ============================================================================
   const onSubmit = async (data: RegisterFormData) => {
-    console.log("📝 Register attempt:", {
-      name: data.name,
-      email: data.email,
-      password: "***",
-    });
-
     setIsLoading(true);
     setErrorMessage("");
 
     try {
-      await signUp(data.email, data.password, data.name);
-      console.log("✅ Registration successful");
-      // O AuthContext já faz o login automático após o registro
-      // A navegação será automática via NavigationContainer
+      await signUp(data.email, data.password, data.name, data.phone);
     } catch (error: any) {
-      console.error("❌ Registration error:", error);
-
       if (!error.statusCode || error.statusCode === 0) {
         setErrorMessage("Erro de conexão. Verifique sua internet.");
       } else {
@@ -141,9 +131,6 @@ const RegisterScreen: React.FC = () => {
     navigation.navigate("Login");
   };
 
-  // ============================================================================
-  // RENDER
-  // ============================================================================
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -177,7 +164,6 @@ const RegisterScreen: React.FC = () => {
                 },
               ]}
             >
-              {/* Back Button */}
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={handleGoToLogin}
@@ -190,7 +176,6 @@ const RegisterScreen: React.FC = () => {
                 />
               </TouchableOpacity>
 
-              {/* Logo Container */}
               <View style={[styles.logoContainer, SHADOWS.glowPrimary]}>
                 <MaterialCommunityIcons
                   name="account-plus-outline"
@@ -199,10 +184,7 @@ const RegisterScreen: React.FC = () => {
                 />
               </View>
 
-              {/* Page Title */}
               <Text style={styles.pageTitle}>Criar Conta</Text>
-
-              {/* Subtitle */}
               <Text style={styles.pageSubtitle}>
                 Junte-se ao BarberBoss e gerencie seu negócio
               </Text>
@@ -230,6 +212,23 @@ const RegisterScreen: React.FC = () => {
                     onChangeText={onChange}
                     onBlur={onBlur}
                     error={errors.name?.message}
+                  />
+                )}
+              />
+
+              {/* Phone Input */}
+              <Controller
+                control={control}
+                name="phone"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    icon="phone"
+                    placeholder="Telefone (99) 99999-9999"
+                    keyboardType="phone-pad"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={errors.phone?.message}
                   />
                 )}
               />
@@ -294,14 +293,12 @@ const RegisterScreen: React.FC = () => {
                 style={styles.registerButton}
               />
 
-              {/* Divider */}
               <View style={styles.divider}>
                 <View style={styles.dividerLine} />
                 <Text style={styles.dividerText}>ou</Text>
                 <View style={styles.dividerLine} />
               </View>
 
-              {/* Login Button */}
               <Button
                 title="Já tenho uma conta"
                 onPress={handleGoToLogin}
@@ -334,27 +331,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.midnight_navy,
   },
-
   gradient: {
     flex: 1,
   },
-
   keyboardView: {
     flex: 1,
   },
-
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: SIZES.lg || 24,
   },
-
-  // Header Section
   headerSection: {
     alignItems: "center",
     marginBottom: SIZES.xl || 32,
     position: "relative",
   },
-
   backButton: {
     position: "absolute",
     top: 0,
@@ -362,7 +353,6 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: SIZES.sm || 12,
   },
-
   logoContainer: {
     width: 100,
     height: 100,
@@ -373,7 +363,6 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.lg || 24,
     marginTop: SIZES.xl || 32,
   },
-
   pageTitle: {
     fontFamily: "Inter_600SemiBold",
     fontWeight: "600",
@@ -383,7 +372,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1.2,
   },
-
   pageSubtitle: {
     fontFamily: "Inter_400Regular",
     fontWeight: "400",
@@ -392,16 +380,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: SIZES.md || 16,
   },
-
-  // Form Section
   formContainer: {
     flex: 1,
   },
-
   errorAlert: {
     marginBottom: SIZES.md || 16,
   },
-
   errorBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -412,7 +396,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.vintage_red + "4D",
   },
-
   errorText: {
     fontFamily: "Inter_400Regular",
     fontWeight: "400",
@@ -420,38 +403,31 @@ const styles = StyleSheet.create({
     color: COLORS.vintage_red,
     flex: 1,
   },
-
   registerButton: {
     marginBottom: SIZES.md || 16,
   },
-
   divider: {
     flexDirection: "row",
     alignItems: "center",
     marginVertical: SIZES.md || 16,
   },
-
   dividerLine: {
     flex: 1,
     height: 1,
     backgroundColor: COLORS.grey_steel + "33",
   },
-
   dividerText: {
     fontFamily: "Inter_500Medium",
     fontWeight: "500",
     color: COLORS.grey_steel,
     marginHorizontal: SIZES.md || 16,
   },
-
-  // Footer Section
   footerSection: {
     marginTop: SIZES.xl || 32,
     paddingTop: SIZES.lg || 24,
     borderTopWidth: 1,
     borderTopColor: COLORS.grey_steel + "1A",
   },
-
   footerText: {
     fontFamily: "Inter_400Regular",
     fontWeight: "400",
@@ -460,7 +436,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
-
   footerLink: {
     fontFamily: "Inter_600SemiBold",
     fontWeight: "600",

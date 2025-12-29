@@ -20,7 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
   isSignedIn: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, phone: string) => Promise<void>;
   signOut: () => Promise<void>;
   restoreToken: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -113,15 +113,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const signUp = useCallback(
-    async (email: string, password: string, name: string) => {
+    async (email: string, password: string, name: string, phone: string) => {
       setIsLoading(true);
       try {
         console.log("📤 Attempting signup...");
-        // ✅ CORRIGIDO - removido /api/
         const response = await apiClient.post("/auth/register", {
           email,
           password,
           name,
+          phone,
         });
 
         const { access_token, user: userData } = response.data;

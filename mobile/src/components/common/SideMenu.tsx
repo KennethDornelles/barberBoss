@@ -7,13 +7,20 @@ const { width } = Dimensions.get('window');
 
 const MENU_WIDTH = width * 0.75;
 
-const menuItems = [
-    { icon: 'grid-view' as const, label: 'Dashboard' },
-    { icon: 'event' as const, label: 'Agendamentos' },
-    { icon: 'groups' as const, label: 'Clientes' },
-    { icon: 'content-cut' as const, label: 'Serviços' },
-    { icon: 'attach-money' as const, label: 'Financeiro' },
-    { icon: 'person' as const, label: 'Perfil' },
+// Defina o tipo para os itens do menu
+type MenuItemIcon = 'grid-view' | 'event' | 'content-cut' | 'attach-money' | 'person' | 'groups';
+
+interface MenuItem {
+    icon: MenuItemIcon;
+    label: string;
+}
+
+const baseMenuItems: MenuItem[] = [
+    { icon: 'grid-view', label: 'Dashboard' },
+    { icon: 'event', label: 'Agendamentos' },
+    { icon: 'content-cut', label: 'Serviços' },
+    { icon: 'attach-money', label: 'Financeiro' },
+    { icon: 'person', label: 'Perfil' },
 ];
 
 // Definir tipos para as props
@@ -37,7 +44,16 @@ interface FabButtonProps {
 
 export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect }) => {
     const [animValue] = useState(new Animated.Value(visible ? 0 : -MENU_WIDTH));
-    const { signOut } = useAuth();
+    const { signOut, user } = useAuth();
+
+    // Monta menu dinamicamente
+    const menuItems = React.useMemo(() => {
+        const items: MenuItem[] = [...baseMenuItems];
+        if (user && (user.role === 'BARBER' || user.role === 'ADMIN')) {
+            items.splice(2, 0, { icon: 'groups', label: 'Clientes' });
+        }
+        return items;
+    }, [user]);
 
     React.useEffect(() => {
         Animated.timing(animValue, {

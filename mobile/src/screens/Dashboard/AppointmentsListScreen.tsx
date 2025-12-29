@@ -37,14 +37,16 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
     NO_SHOW: 'Não compareceu',
 };
 
+// --- CORREÇÃO AQUI ---
+// Adicionamos 'ClientsManagement' para o TypeScript aceitar a navegação
 type RootStackParamList = {
     AppointmentsList: undefined;
     CreateAppointment: { appointmentId?: string } | undefined;
-    FinanceSummary: undefined; // Adicionado
+    FinanceSummary: undefined;
+    ClientsManagement: undefined; // <--- Rota adicionada
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 
 const AppointmentsListScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
@@ -201,6 +203,7 @@ const AppointmentsListScreen: React.FC = () => {
                     if (label === 'Dashboard') navigation.navigate('AppointmentsList');
                     else if (label === 'Agendamentos') navigation.navigate('AppointmentsList');
                     else if (label === 'Financeiro') navigation.navigate('FinanceSummary');
+                    else if (label === 'Clientes') navigation.navigate('ClientsManagement');
                 }}
             />
             <View style={{ flex: 1 }}>

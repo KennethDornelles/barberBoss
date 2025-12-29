@@ -8,20 +8,20 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from "react-native";
 import { COLORS } from "../constants/colors";
 
-// Auth Screens - IMPORTS CORRIGIDOS
+// Auth Screens
 import LoginScreen from "../screens/Auth/LoginScreen";
 import RegisterScreen from "../screens/Auth/RegisterScreen";
 import ForgotPasswordScreen from "../screens/Auth/ForgotPasswordScreen";
-// ResetPasswordScreen removido - não existe (funcionalidade está dentro do ForgotPasswordScreen)
 
-// Dashboard Screens - NOVAS TELAS
+// Dashboard Screens
 import AppointmentsListScreen from "../screens/Dashboard/AppointmentsListScreen";
 import CreateAppointmentScreen from "../screens/Dashboard/CreateAppointmentScreen";
 import FinanceSummaryScreen from "../screens/Dashboard/FinanceSummaryScreen";
+// CORREÇÃO: Importando a tela unificada do caminho correto (Dashboard)
+import ClientsManagementScreen from "../screens/Clients/ClientsManagementScreen"; 
 
 // ============================================================================
 // TYPES
@@ -35,8 +35,8 @@ export type AuthStackParamList = {
 export type MainStackParamList = {
   AppointmentsList: undefined;
   CreateAppointment: { appointmentId?: string } | undefined;
-  FinanceSummary: undefined; // ⬅️ NOVA TELA
-  // Outras telas principais aqui
+  FinanceSummary: undefined;
+  ClientsManagement: undefined; // Única rota necessária para clientes agora
 };
 
 export type RootStackParamList = {
@@ -70,11 +70,9 @@ const AuthNavigator: React.FC = () => {
 };
 
 // ============================================================================
-// MAIN NAVIGATOR (Atualizado)
+// MAIN NAVIGATOR
 // ============================================================================
 const MainNavigator: React.FC = () => {
-  const { signOut, user } = useAuth();
-
   return (
     <MainStack.Navigator
       initialRouteName="AppointmentsList"
@@ -93,9 +91,14 @@ const MainNavigator: React.FC = () => {
       <MainStack.Screen
         name="FinanceSummary"
         component={FinanceSummaryScreen}
-        options={{ headerShown: false }}
       />
-      {/* Outras telas principais aqui */}
+      
+      {/* CORREÇÃO: Apenas esta rota é necessária. Os modais estão dentro dela. */}
+      <MainStack.Screen
+        name="ClientsManagement"
+        component={ClientsManagementScreen}
+      />
+      
     </MainStack.Navigator>
   );
 };
@@ -106,7 +109,6 @@ const MainNavigator: React.FC = () => {
 const RootNavigator: React.FC = () => {
   const { isSignedIn, isLoading } = useAuth();
 
-  // Loading state enquanto restaura o token
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -153,69 +155,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: COLORS.midnight_navy,
   },
-
   loadingText: {
     marginTop: 16,
     fontSize: 16,
     color: COLORS.grey_steel,
-  },
-
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: COLORS.midnight_navy,
-    padding: 24,
-  },
-
-  placeholderTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: COLORS.white_pure,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-
-  placeholderSubtext: {
-    fontSize: 16,
-    color: COLORS.grey_steel,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-
-  placeholderUserName: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: COLORS.royal_blue,
-    textAlign: "center",
-    marginBottom: 4,
-  },
-
-  placeholderUserEmail: {
-    fontSize: 14,
-    color: COLORS.grey_steel,
-    textAlign: "center",
-    marginBottom: 32,
-  },
-
-  placeholderInfo: {
-    fontSize: 14,
-    color: COLORS.grey_steel,
-    textAlign: "center",
-    marginBottom: 32,
-    paddingHorizontal: 32,
-  },
-
-  signOutButton: {
-    backgroundColor: COLORS.royal_blue,
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 8,
-  },
-
-  signOutButtonText: {
-    color: COLORS.white_pure,
-    fontSize: 16,
-    fontWeight: "600",
   },
 });
