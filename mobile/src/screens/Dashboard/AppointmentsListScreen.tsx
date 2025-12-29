@@ -20,6 +20,7 @@ import { appointmentsService, Appointment, AppointmentStatus } from '../../api/a
 import { COLORS, SIZES, SHADOWS } from '../../constants/colors';
 import { useAuth } from '../../context/AuthContext';
 import { SideMenu, TopBar, FabButton } from '../../components/common/SideMenu';
+import { navigateFromMenu } from '../../navigation/menuNavigationMap';
 
 const STATUS_COLORS: Record<AppointmentStatus, string> = {
     PENDING: COLORS.warning,
@@ -201,13 +202,9 @@ const AppointmentsListScreen: React.FC = () => {
                 onClose={() => setMenuVisible(false)}
                 onSelect={label => {
                     setMenuVisible(false);
-                    const normalized = label.toLowerCase();
-                    if (normalized === 'dashboard' || normalized === 'início') navigation.navigate('AppointmentsList');
-                    else if (normalized === 'agendamentos') navigation.navigate('AppointmentsList');
-                    else if (normalized === 'financeiro') navigation.navigate('FinanceSummary');
-                    else if (normalized === 'clientes') navigation.navigate('ClientsManagement');
-                    else if (normalized === 'equipe') navigation.navigate('TeamManagement');
-                    else if (normalized === 'serviços') navigation.navigate('ServicesList');
+                    if (!navigateFromMenu(label, navigation)) {
+                        // fallback ou alerta opcional
+                    }
                 }}
             />
             <View style={{ flex: 1 }}>

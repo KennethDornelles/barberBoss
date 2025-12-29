@@ -23,6 +23,7 @@ import { usersService, Client } from '../../api/usersService';
 import { appointmentsService, Appointment } from '../../api/appointmentsService';
 // ADICIONADO: Cores globais
 import { COLORS, SIZES } from '../../constants/colors';
+import { navigateFromMenu } from '../../navigation/menuNavigationMap';
 
 // Importamos os tipos do seu AppNavigator para corrigir o erro
 import { MainStackParamList } from '../../navigation/AppNavigator';
@@ -214,15 +215,8 @@ const ClientsManagementScreen: React.FC = () => {
                 onClose={() => setMenuVisible(false)}
                 onSelect={(label) => {
                     setMenuVisible(false);
-                    // Mapeamento correto para as rotas do AppNavigator
-                    if (label === 'Dashboard') navigation.navigate('AppointmentsList');
-                    else if (label === 'Agendamentos') navigation.navigate('AppointmentsList');
-                    else if (label === 'Financeiro') navigation.navigate('FinanceSummary');
-                    else if (label === 'Clientes') navigation.navigate('ClientsManagement');
-
-                    // Rotas que ainda não existem (placeholder para não quebrar)
-                    else if (label === 'Serviços' || label === 'Perfil') {
-                        Alert.alert('Em breve', 'Esta funcionalidade será implementada em breve.');
+                    if (!navigateFromMenu(label, navigation)) {
+                        // fallback ou alerta opcional
                     }
                 }}
             />

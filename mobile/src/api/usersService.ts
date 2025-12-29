@@ -1,93 +1,112 @@
 import apiClient from './apiClient';
 
 export interface Client {
-	id: string;
-	name: string;
-	phone: string;
-	email?: string;
+    id: string;
+    name: string;
+    phone: string;
+    email?: string;
 }
 
-export interface PaginatedClients {
-	data: Client[];
-	total: number;
+export interface UserProfile {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    avatarUrl?: string;
+    role: 'ADMIN' | 'BARBER' | 'CLIENT';
 }
 
 export interface StaffMember {
-	id: string;
-	name: string;
-	email: string;
-	phone: string;
-	role: 'ADMIN' | 'BARBER';
-	status: 'active' | 'inactive';
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: 'ADMIN' | 'BARBER';
+    status: 'active' | 'inactive';
 }
 
 export const usersService = {
-	async getStaff(search = ""): Promise<StaffMember[]> {
-		const params: any = { role: 'BARBER', limit: 100 };
-		if (search) params.search = search;
-		const res = await apiClient.get('/users', { params });
-		let users: StaffMember[] = [];
-		if (res.data && Array.isArray(res.data.users)) users = res.data.users;
-		else if (Array.isArray(res.data)) users = res.data;
-		else users = res.data?.data || [];
-		// Garante que só BARBER seja retornado
-		return users.filter(u => u.role === 'BARBER');
-	},
+    // --- MÉTODOS DE PERFIL (NOVOS) ---
+    async getMe(): Promise<UserProfile> {
+        const { data } = await apiClient.get<UserProfile>('/auth/me');
+        return data;
+    },
 
-	async createStaff(data: { name: string; email: string; phone: string; role: 'ADMIN' | 'BARBER' }): Promise<StaffMember> {
-		try {
-			const res = await apiClient.post('/users', { ...data });
-			return res.data;
-		} catch (error: any) {
-			throw new Error(error?.message || 'Erro ao criar membro da equipe');
-		}
-	},
+    async updateProfile(id: string, data: { name: string; phone: string; email: string }): Promise<UserProfile> {
+        const { data: response } = await apiClient.patch<UserProfile>(`/users/${id}`, data);
+        return response;
+    },
 
-	async updateStaff(id: string, data: { name?: string; email?: string; phone?: string; role?: 'ADMIN' | 'BARBER'; status?: 'active' | 'inactive' }): Promise<StaffMember> {
-		try {
-			const res = await apiClient.patch(`/users/${id}`, data);
-			return res.data;
-		} catch (error: any) {
-			throw new Error(error?.message || 'Erro ao atualizar membro da equipe');
-		}
-	},
+    async changePassword(id: string, data: { currentPassword: string; newPassword: string }): Promise<void> {
+        await apiClient.patch(`/users/${id}/change-password`, data);
+    },
 
-	async deleteStaff(id: string): Promise<void> {
-		try {
-			await apiClient.delete(`/users/${id}`);
-		} catch (error: any) {
-			throw new Error(error?.message || 'Erro ao excluir membro da equipe');
-		}
-	},
+    // --- MÉTODOS EXISTENTES ---
+    async getStaff(search = ""): Promise<StaffMember[]> {
+        const params: any = { role: 'BARBER', limit: 100 };
+        if (search) params.search = search;
+        const res = await apiClient.get('/users', { params });
+        let users: StaffMember[] = [];
+        if (res.data && Array.isArray(res.data.users)) users = res.data.users;
+        else if (Array.isArray(res.data)) users = res.data;
+        else users = res.data?.data || [];
+        return users.filter(u => u.role === 'BARBER' || u.role === 'ADMIN');
+    },
 
-	async getClients(search = ''): Promise<Client[]> {
-		const params: any = { role: 'CLIENT', limit: 100 };
-		if (search) params.search = search;
-		const res = await apiClient.get('/users', { params });
-		if (res.data && Array.isArray(res.data.users)) return res.data.users;
-		if (Array.isArray(res.data)) return res.data;
-		return res.data?.data || [];
-	},
+    async createStaff(data: { name: string; email: string; phone: string; role: 'ADMIN' | 'BARBER' }): Promise<StaffMember> {
+        try {
+            const res = await apiClient.post('/users', { ...data });
+            return res.data;
+        } catch (error: any) {
+            throw new Error(error?.message || 'Erro ao criar membro da equipe');
+        }
+    },
 
-	async createClient(data: { name: string; phone: string }): Promise<Client> {
-		try {
-			const res = await apiClient.post('/users', { ...data, role: 'CLIENT' });
-			return res.data;
-		} catch (error: any) {
-			throw new Error(error?.message || 'Erro ao criar cliente');
-		}
-	},
+    async updateStaff(id: string, data: { name?: string; email?: string; phone?: string; role?: 'ADMIN' | 'BARBER'; status?: 'active' | 'inactive' }): Promise<StaffMember> {
+        try {
+            const res = await apiClient.patch(`/users/${id}`, data);
+            return res.data;
+        } catch (error: any) {
+            throw new Error(error?.message || 'Erro ao atualizar membro da equipe');
+        }
+    },
 
-	async updateClient(id: string, data: { name: string; phone: string }): Promise<Client> {
-		try {
-			const res = await apiClient.patch(`/users/${id}`, data);
-			return res.data;
-		} catch (error: any) {
-			throw new Error(error?.message || 'Erro ao atualizar cliente');
-		}
-	},
+    async deleteStaff(id: string): Promise<void> {
+        try {
+            await apiClient.delete(`/users/${id}`);
+        } catch (error: any) {
+            throw new Error(error?.message || 'Erro ao excluir membro da equipe');
+        }
+    },
 
-	async deleteClient(id: string): Promise<void> {
-		await apiClient.delete(`/users/${id}`);
-	},
+    async getClients(search = ''): Promise<Client[]> {
+        const params: any = { role: 'CLIENT', limit: 100 };
+        if (search) params.search = search;
+        const res = await apiClient.get('/users', { params });
+        if (res.data && Array.isArray(res.data.users)) return res.data.users;
+        if (Array.isArray(res.data)) return res.data;
+        return res.data?.data || [];
+    },
+
+    async createClient(data: { name: string; phone: string }): Promise<Client> {
+        try {
+            const res = await apiClient.post('/users', { ...data, role: 'CLIENT' });
+            return res.data;
+        } catch (error: any) {
+            throw new Error(error?.message || 'Erro ao criar cliente');
+        }
+    },
+
+    async updateClient(id: string, data: { name: string; phone: string }): Promise<Client> {
+        try {
+            const res = await apiClient.patch(`/users/${id}`, data);
+            return res.data;
+        } catch (error: any) {
+            throw new Error(error?.message || 'Erro ao atualizar cliente');
+        }
+    },
+
+    async deleteClient(id: string): Promise<void> {
+        await apiClient.delete(`/users/${id}`);
+    },
 };

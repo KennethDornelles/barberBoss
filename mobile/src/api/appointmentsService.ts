@@ -34,7 +34,12 @@ export interface Appointment {
   timezone?: string;
   service?: Service;
   barber?: Barber;
+  
+  // ✅ CORREÇÃO: Campo adicionado
+  price?: number;
 }
+
+// ... restante do arquivo (CreateAppointmentDTO, etc) permanece igual ...
 
 export interface CreateAppointmentDTO {
   userId?: string;

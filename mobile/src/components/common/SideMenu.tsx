@@ -1,246 +1,214 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, TextInput } from 'react-native';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Animated,
+    Dimensions,
+    Image,
+    TextInput,
+    Pressable,
+    ScrollView
+} from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { COLORS } from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
+const MENU_WIDTH = width * 0.82;
+const ANIMATION_DURATION = 300;
 
-const MENU_WIDTH = width * 0.75;
-
-// Defina o tipo para os itens do menu
-type MenuItemIcon = 'grid-view' | 'event' | 'content-cut' | 'attach-money' | 'person' | 'groups' | 'supervisor-account';
+type MenuItemIcon = 'grid-view' | 'content-cut' | 'attach-money' | 'groups' | 'supervisor-account';
 
 interface MenuItem {
     icon: MenuItemIcon;
     label: string;
 }
 
-const baseMenuItems: MenuItem[] = [
-    { icon: 'grid-view', label: 'Início' },
-    // { icon: 'event', label: 'Agendamentos' }, // removido
-    // Serviços será adicionado condicionalmente abaixo
-    { icon: 'attach-money', label: 'Financeiro' },
-    { icon: 'person', label: 'Perfil' },
-];
-
-// Definir tipos para as props
 interface SideMenuProps {
     visible: boolean;
     onClose: () => void;
     onSelect: (label: string) => void;
-    onAddTeamMember?: () => void;
 }
 
-interface TopBarProps {
-    onMenuPress: () => void;
-    onBellPress: () => void;
-    onProfilePress: () => void;
-    searchValue: string;
-    onSearchChange: (text: string) => void;
+// Interface auxiliar para corrigir o erro de avatarUrl
+interface AuthUserWithAvatar {
+    name: string;
+    email: string;
+    role: string;
+    avatarUrl?: string; // Campo opcional
 }
 
-interface FabButtonProps {
-    onPress: () => void;
-}
+export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect }) => {
+    const { user, signOut } = useAuth();
+    // Cast seguro para usar avatarUrl sem erro
+    const safeUser = user as unknown as AuthUserWithAvatar | null;
+    
+    const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
 
-export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect, onAddTeamMember }) => {
-    const [animValue] = useState(new Animated.Value(visible ? 0 : -MENU_WIDTH));
-    const { signOut, user } = useAuth();
+    const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    
+    // Estado para controlar se o componente deve estar na árvore de renderização
+    const [shouldRender, setShouldRender] = useState(visible);
 
-    // Monta menu dinamicamente
-    const menuItems = React.useMemo(() => {
-        const items: MenuItem[] = [...baseMenuItems];
+    const menuItems = useMemo(() => {
+        const items: MenuItem[] = [
+            { icon: 'grid-view', label: 'Início' },
+        ];
+
         if (user) {
-            // Adiciona Serviços apenas se não for CLIENT
             if (user.role !== 'CLIENT') {
-                items.splice(1, 0, { icon: 'content-cut', label: 'Serviços' });
+                 items.push({ icon: 'content-cut', label: 'Serviços' });
             }
-            if (user.role === 'BARBER' || user.role === 'ADMIN') {
-                items.splice(2, 0, { icon: 'groups', label: 'Clientes' });
+            if (['ADMIN', 'BARBER'].includes(user.role)) {
+                items.push({ icon: 'groups', label: 'Clientes' });
             }
             if (user.role === 'ADMIN') {
-                // Garante que 'Equipe' sempre aparece após 'Clientes'
-                items.splice(3, 0, { icon: 'supervisor-account', label: 'Equipe' });
+                items.push({ icon: 'supervisor-account', label: 'Equipe' });
             }
+            items.push({ icon: 'attach-money', label: 'Financeiro' });
         }
         return items;
     }, [user]);
 
-    React.useEffect(() => {
-        Animated.timing(animValue, {
-            toValue: visible ? 0 : -MENU_WIDTH,
-            duration: 250,
-            useNativeDriver: false,
-        }).start();
+    useEffect(() => {
+        if (visible) {
+            setShouldRender(true); // Monta o componente antes de animar
+            Animated.parallel([
+                Animated.timing(slideAnim, { toValue: 0, duration: ANIMATION_DURATION, useNativeDriver: true }),
+                Animated.timing(fadeAnim, { toValue: 1, duration: ANIMATION_DURATION, useNativeDriver: true }),
+            ]).start();
+        } else {
+            Animated.parallel([
+                Animated.timing(slideAnim, { toValue: -MENU_WIDTH, duration: ANIMATION_DURATION, useNativeDriver: true }),
+                Animated.timing(fadeAnim, { toValue: 0, duration: ANIMATION_DURATION, useNativeDriver: true }),
+            ]).start(({ finished }) => {
+                if (finished) {
+                    setShouldRender(false); // Desmonta apenas ao terminar a animação
+                }
+            });
+        }
     }, [visible]);
 
+    const handleProfilePress = () => {
+        onClose();
+        navigation.navigate('Profile');
+    };
+
+    const handleLogout = () => {
+        onClose();
+        signOut();
+    };
+
+    // Se não deve renderizar (fechado e animação concluída), retorna null
+    if (!shouldRender) return null;
+
     return (
-        <Animated.View style={[styles.menu, { left: animValue }]}>
-            <View style={styles.menuHeader}>
-                <Text style={styles.menuTitle}>Menu</Text>
-                <TouchableOpacity onPress={onClose}>
-                    <Ionicons name="close" size={28} color="#fff" />
+        <View style={StyleSheet.absoluteFill} pointerEvents={visible ? 'auto' : 'none'}>
+            <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
+                <Pressable style={{ flex: 1 }} onPress={onClose} />
+            </Animated.View>
+
+            <Animated.View 
+                style={[
+                    styles.menuContainer, 
+                    { 
+                        transform: [{ translateX: slideAnim }],
+                        paddingTop: insets.top + 20,
+                        paddingBottom: insets.bottom + 20 
+                    }
+                ]}
+            >
+                <TouchableOpacity style={styles.profileHeader} activeOpacity={0.7} onPress={handleProfilePress}>
+                    <View style={styles.avatarContainer}>
+                        {safeUser?.avatarUrl ? (
+                            <Image source={{ uri: safeUser.avatarUrl }} style={styles.avatarImage} />
+                        ) : (
+                            <Text style={styles.avatarText}>{safeUser?.name?.charAt(0).toUpperCase() || 'U'}</Text>
+                        )}
+                    </View>
+                    <View style={styles.userInfo}>
+                        <Text style={styles.userName} numberOfLines={1}>{safeUser?.name || 'Bem-vindo'}</Text>
+                        <Text style={styles.userRole}>
+                            {safeUser?.role === 'ADMIN' ? 'Administrador' : safeUser?.role === 'BARBER' ? 'Barbeiro' : 'Cliente'}
+                        </Text>
+                        <Text style={styles.editLink}>Ver perfil</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.grey_steel} />
                 </TouchableOpacity>
-            </View>
-            {menuItems.map((item) => (
-                <TouchableOpacity key={item.label} style={styles.menuItem} onPress={() => onSelect(item.label)}>
-                    <MaterialIcons name={item.icon} size={24} color="#fff" style={{ marginRight: 16 }} />
-                    <Text style={styles.menuItemText}>{item.label}</Text>
-                </TouchableOpacity>
-            ))}
-            {/* O botão 'Novo Membro' foi removido. O acesso ao cadastro é feito dentro da tela de Equipe. */}
-            <TouchableOpacity style={styles.logoutBtn} onPress={signOut}>
-                <Ionicons name="log-out-outline" size={22} color="#fff" style={{ marginRight: 12 }} />
-                <Text style={styles.logoutText}>Sair</Text>
-            </TouchableOpacity>
-        </Animated.View>
+
+                <View style={styles.divider} />
+
+                <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+                    {menuItems.map((item) => (
+                        <TouchableOpacity key={item.label} style={styles.menuItem} onPress={() => onSelect(item.label)}>
+                            <View style={styles.iconWrapper}>
+                                <MaterialIcons name={item.icon} size={22} color="#D1D5DB" />
+                            </View>
+                            <Text style={styles.menuItemText}>{item.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                <View style={styles.footer}>
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                        <View style={[styles.iconWrapper, styles.logoutIconWrapper]}>
+                            <Ionicons name="log-out-outline" size={22} color="#EF4444" />
+                        </View>
+                        <Text style={styles.logoutText}>Sair da conta</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.versionText}>Versão 1.0.0</Text>
+                </View>
+            </Animated.View>
+        </View>
     );
 };
 
-export const TopBar: React.FC<TopBarProps> = ({
-    onMenuPress,
-    onBellPress,
-    onProfilePress,
-    searchValue,
-    onSearchChange
-}) => (
+// ... Restante do arquivo (TopBar, FabButton e Styles) permanece igual ...
+export const TopBar: React.FC<any> = ({ onMenuPress, onBellPress, onProfilePress, searchValue, onSearchChange }) => (
     <View style={styles.topBar}>
-        <TouchableOpacity onPress={onMenuPress}>
-            <Ionicons name="menu" size={28} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#aaa" style={{ marginLeft: 8 }} />
-            <TextInput
-                style={styles.searchInput}
-                placeholder="Buscar.."
-                placeholderTextColor="#aaa"
-                value={searchValue}
-                onChangeText={onSearchChange}
-            />
+        <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}><Ionicons name="menu" size={28} color="#FFF" /></TouchableOpacity>
+        <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color="#9CA3AF" />
+            <TextInput style={styles.input} placeholder="Buscar..." placeholderTextColor="#6B7280" value={searchValue} onChangeText={onSearchChange} />
         </View>
-        <TouchableOpacity onPress={onBellPress}>
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onProfilePress}>
-            <Ionicons name="person-circle-outline" size={28} color="#fff" />
-        </TouchableOpacity>
+        <TouchableOpacity onPress={onBellPress} style={styles.iconBtn}><Ionicons name="notifications-outline" size={24} color="#FFF" /></TouchableOpacity>
     </View>
 );
 
-export const FabButton: React.FC<FabButtonProps> = ({ onPress }) => (
-    <TouchableOpacity style={styles.fab} onPress={onPress}>
-        <Ionicons name="add" size={32} color="#fff" />
-    </TouchableOpacity>
+export const FabButton: React.FC<any> = ({ onPress }) => (
+    <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}><Ionicons name="add" size={32} color="#FFF" /></TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-    addTeamBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 18,
-        paddingVertical: 14,
-        borderRadius: 8,
-        backgroundColor: '#2563eb',
-        justifyContent: 'center',
-    },
-    addTeamBtnText: {
-        color: '#fff',
-        fontSize: 17,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-    },
-    menu: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        width: MENU_WIDTH,
-        backgroundColor: '#151c2c',
-        zIndex: 100,
-        paddingTop: 48,
-        paddingHorizontal: 16,
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 2, height: 0 },
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    logoutBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 32,
-        paddingVertical: 14,
-        borderRadius: 8,
-        backgroundColor: 'rgba(239,68,68,0.12)',
-        justifyContent: 'center',
-    },
-    logoutText: {
-        color: '#fff',
-        fontSize: 17,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-    },
-    menuHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    menuTitle: {
-        color: '#fff',
-        fontSize: 22,
-        fontWeight: 'bold',
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 16,
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        marginBottom: 4,
-        backgroundColor: 'rgba(255,255,255,0.04)',
-    },
-    menuItemText: {
-        color: '#fff',
-        fontSize: 18,
-    },
-    topBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#223',
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        elevation: 4,
-        zIndex: 10,
-    },
-    searchContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#222b',
-        borderRadius: 8,
-        marginHorizontal: 12,
-        height: 38,
-    },
-    searchInput: {
-        flex: 1,
-        color: '#fff',
-        fontSize: 16,
-        paddingHorizontal: 8,
-    },
-    fab: {
-        position: 'absolute',
-        right: 24,
-        bottom: 32,
-        backgroundColor: '#1976d2',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 8,
-    },
+    backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1 },
+    menuContainer: { position: 'absolute', left: 0, top: 0, bottom: 0, width: MENU_WIDTH, backgroundColor: '#111827', zIndex: 2, borderRightWidth: 1, borderRightColor: '#1F2937', paddingHorizontal: 20 },
+    profileHeader: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#1F2937', borderRadius: 12, borderWidth: 1, borderColor: '#374151', marginBottom: 20 },
+    avatarContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+    avatarImage: { width: 48, height: 48, borderRadius: 24 },
+    avatarText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+    userInfo: { flex: 1 },
+    userName: { color: '#F9FAFB', fontSize: 16, fontWeight: 'bold' },
+    userRole: { color: '#9CA3AF', fontSize: 12, fontWeight: '600', textTransform: 'uppercase' },
+    editLink: { color: '#3B82F6', fontSize: 12, marginTop: 2, fontWeight: '500' },
+    divider: { height: 1, backgroundColor: '#1F2937', marginBottom: 10 },
+    menuList: { flex: 1 },
+    menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderRadius: 8, marginBottom: 4 },
+    iconWrapper: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 8, marginRight: 12 },
+    menuItemText: { color: '#D1D5DB', fontSize: 16, fontWeight: '500' },
+    footer: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#1F2937', paddingTop: 20 },
+    logoutButton: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+    logoutIconWrapper: { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+    logoutText: { color: '#EF4444', fontSize: 16, fontWeight: '600' },
+    versionText: { color: '#4B5563', fontSize: 12, textAlign: 'center' },
+    topBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1F2937', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#374151' },
+    iconBtn: { padding: 4 },
+    searchBar: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#111827', borderRadius: 8, marginHorizontal: 12, paddingHorizontal: 10, height: 40, borderWidth: 1, borderColor: '#374151' },
+    input: { flex: 1, color: '#FFF', marginLeft: 8 },
+    fab: { position: 'absolute', right: 20, bottom: 30, backgroundColor: '#3B82F6', width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: '#3B82F6', shadowOpacity: 0.4, shadowOffset: {width:0, height:4} }
 });

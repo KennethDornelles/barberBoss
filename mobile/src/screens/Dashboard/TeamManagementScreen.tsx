@@ -10,6 +10,7 @@ import { appointmentsService, Appointment } from '../../api/appointmentsService'
 import { COLORS } from '../../constants/colors';
 import { useAuth } from '../../context/AuthContext';
 import { MainStackParamList } from '../../navigation/AppNavigator';
+import { navigateFromMenu } from '../../navigation/menuNavigationMap';
 
 interface TeamMember {
     id: string; name: string; email: string; phone: string; role: 'ADMIN' | 'BARBER'; status: 'active' | 'inactive';
@@ -51,8 +52,17 @@ const TeamManagementScreen: React.FC = () => {
         setLoading(true);
         try {
             const data = await usersService.getStaff(searchText);
-            setTeam(data);
-            setFilteredTeam(data);
+            // Mapeando a resposta para garantir compatibilidade
+            const mappedData: TeamMember[] = data.map(d => ({
+                id: d.id,
+                name: d.name,
+                email: d.email,
+                phone: d.phone,
+                role: d.role,
+                status: d.status
+            }));
+            setTeam(mappedData);
+            setFilteredTeam(mappedData);
         } catch (e) {
             Alert.alert('Erro', 'Falha ao carregar equipe');
         } finally {
@@ -156,47 +166,82 @@ const TeamManagementScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+
             <TopBar onMenuPress={() => setMenuVisible(true)} onBellPress={() => { }} onProfilePress={() => { }} searchValue={searchText} onSearchChange={setSearchText} />
+
             <SideMenu
                 visible={menuVisible}
                 onClose={() => setMenuVisible(false)}
                 onSelect={(label) => {
                     setMenuVisible(false);
-                    const normalized = label.toLowerCase();
-                    if (normalized === 'dashboard') navigation.navigate('AppointmentsList');
-                    else if (normalized === 'agendamentos') navigation.navigate('AppointmentsList');
-                    else if (normalized === 'clientes') navigation.navigate('ClientsManagement');
-                    else if (normalized === 'equipe') navigation.navigate('TeamManagement');
-                    else if (normalized === 'serviços' || normalized === 'servicos') navigation.navigate('AppointmentsList'); // ajuste conforme necessário
-                    else if (normalized === 'financeiro') navigation.navigate('FinanceSummary');
-                    else if (normalized === 'perfil') navigation.navigate('AppointmentsList'); // ajuste conforme necessário
+                    // Lógica simples de navegação baseada no label
+                    if (label === 'Início') navigation.navigate('AppointmentsList');
+                    else if (label === 'Serviços') navigation.navigate('ServicesList');
+                    else if (label === 'Clientes') navigation.navigate('ClientsManagement');
+                    else if (label === 'Financeiro') navigation.navigate('FinanceSummary');
                 }}
-                onAddTeamMember={() => openForm()}
+            // onAddTeamMember foi REMOVIDO aqui, isso corrige o erro do TypeScript
             />
+
             <View style={{ flex: 1 }}>
                 <View style={styles.headerTitleContainer}><Text style={styles.pageTitle}>Gestão de Equipe</Text><Text style={styles.pageSubtitle}>{filteredTeam.length} membros</Text></View>
                 <FlatList data={filteredTeam} keyExtractor={item => item.id} renderItem={renderMemberItem} contentContainerStyle={styles.listContent} />
             </View>
-            {/* Modal de formulário para criar/editar membro */}
+
+            {/* BOTÃO FLUTUANTE ADICIONADO AQUI */}
+            <FabButton onPress={() => openForm()} />
+
             <Modal visible={formVisible} animationType="slide" transparent>
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
-                    <View style={{ backgroundColor: COLORS.background, padding: 24, borderRadius: 16, width: '90%' }}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: COLORS.primary, marginBottom: 16 }}>{isEditing ? 'Editar Membro' : 'Novo Membro'}</Text>
-                        <TextInput placeholder="Nome" value={name} onChangeText={setName} style={{ color: '#fff', borderBottomWidth: 1, borderColor: COLORS.primary, marginBottom: 12 }} placeholderTextColor="#aaa" />
-                        <TextInput placeholder="E-mail" value={email} onChangeText={setEmail} style={{ color: '#fff', borderBottomWidth: 1, borderColor: COLORS.primary, marginBottom: 12 }} placeholderTextColor="#aaa" keyboardType="email-address" autoCapitalize="none" />
-                        <TextInput placeholder="Telefone" value={phone} onChangeText={setPhone} style={{ color: '#fff', borderBottomWidth: 1, borderColor: COLORS.primary, marginBottom: 12 }} placeholderTextColor="#aaa" keyboardType="phone-pad" />
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>{isEditing ? 'Editar Membro' : 'Novo Membro'}</Text>
+                        <Text style={styles.label}>Nome</Text>
+                        <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nome completo" placeholderTextColor="#6B7280" />
+                        <Text style={styles.label}>E-mail</Text>
+                        <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="E-mail" placeholderTextColor="#6B7280" keyboardType="email-address" autoCapitalize="none" />
+                        <Text style={styles.label}>Telefone</Text>
+                        <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder="Telefone" placeholderTextColor="#6B7280" keyboardType="phone-pad" />
                         <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-                            <TouchableOpacity onPress={() => setRole('BARBER')} style={{ flex: 1, backgroundColor: role === 'BARBER' ? COLORS.primary : '#222', padding: 10, borderRadius: 8, marginRight: 8, alignItems: 'center' }}>
-                                <Text style={{ color: '#fff' }}>Barbeiro</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setRole('ADMIN')} style={{ flex: 1, backgroundColor: role === 'ADMIN' ? COLORS.primary : '#222', padding: 10, borderRadius: 8, marginLeft: 8, alignItems: 'center' }}>
-                                <Text style={{ color: '#fff' }}>Administrador</Text>
-                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setRole('BARBER')} style={[styles.roleButton, role === 'BARBER' && styles.roleActive]}><Text style={styles.roleText}>Barbeiro</Text></TouchableOpacity>
+                            <TouchableOpacity onPress={() => setRole('ADMIN')} style={[styles.roleButton, role === 'ADMIN' && styles.roleActive]}><Text style={styles.roleText}>Admin</Text></TouchableOpacity>
                         </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                            <TouchableOpacity onPress={() => setFormVisible(false)} style={[styles.saveButton, { backgroundColor: '#374151', marginRight: 8 }]}><Text style={styles.saveButtonText}>Cancelar</Text></TouchableOpacity>
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity onPress={() => setFormVisible(false)} style={styles.cancelButton}><Text style={styles.cancelButtonText}>Cancelar</Text></TouchableOpacity>
                             <TouchableOpacity onPress={handleSave} style={styles.saveButton}><Text style={styles.saveButtonText}>{isEditing ? 'Salvar' : 'Criar'}</Text></TouchableOpacity>
                         </View>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal visible={historyVisible} animationType="fade" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { height: '60%' }]}>
+                        <View style={styles.historyHeader}>
+                            <Text style={styles.modalTitle}>Produção: {selectedMember?.name}</Text>
+                            <TouchableOpacity onPress={() => setHistoryVisible(false)}>
+                                <Ionicons name="close" size={24} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
+                            {loadingHistory ? (
+                                <Text style={styles.emptyText}>Carregando produção...</Text>
+                            ) : memberHistory.length === 0 ? (
+                                <Text style={styles.emptyText}>Nenhum atendimento realizado.</Text>
+                            ) : (
+                                memberHistory.map((hist) => (
+                                    <View key={hist.id} style={styles.historyItem}>
+                                        <View>
+                                            <Text style={styles.historyService}>{hist.service?.name || 'Serviço'}</Text>
+                                            <Text style={styles.historyDate}>{new Date(hist.startsAt).toLocaleDateString()} - {new Date(hist.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                                        </View>
+                                        <View style={{ alignItems: 'flex-end' }}>
+                                            <Text style={styles.historyPrice}>R$ {hist.price || '0,00'}</Text>
+                                            <Text style={[styles.historyStatus, { color: hist.status === 'CONFIRMED' ? COLORS.success : COLORS.warning }]}>{hist.status}</Text>
+                                        </View>
+                                    </View>
+                                ))
+                            )}
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
@@ -219,7 +264,25 @@ const styles = StyleSheet.create({
     cardSubText: { fontSize: 12, color: COLORS.primary, fontWeight: 'bold' },
     cardPhone: { fontSize: 14, color: '#9CA3AF' },
     iconButton: { padding: 8, backgroundColor: '#253045', borderRadius: 8 },
-    saveButton: { backgroundColor: COLORS.primary, padding: 14, borderRadius: 8, alignItems: 'center' },
-    saveButtonText: { color: '#FFF', fontWeight: '600' }
+    saveButton: { backgroundColor: COLORS.primary, padding: 14, borderRadius: 8, alignItems: 'center', flex: 1, marginLeft: 5 },
+    saveButtonText: { color: '#FFF', fontWeight: '600' },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 20 },
+    modalContent: { backgroundColor: '#1F2937', borderRadius: 16, padding: 20 },
+    modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#F9FAFB', marginBottom: 20, textAlign: 'center' },
+    label: { color: '#9CA3AF', marginBottom: 6, fontSize: 14 },
+    input: { backgroundColor: '#374151', borderRadius: 8, padding: 12, color: '#F9FAFB', marginBottom: 16, fontSize: 16 },
+    roleButton: { flex: 1, padding: 10, borderRadius: 8, alignItems: 'center', backgroundColor: '#374151', marginHorizontal: 4 },
+    roleActive: { backgroundColor: COLORS.primary },
+    roleText: { color: '#FFF' },
+    modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+    cancelButton: { flex: 1, padding: 14, marginRight: 5, borderRadius: 8, backgroundColor: '#374151', alignItems: 'center' },
+    cancelButtonText: { color: '#FFF', fontWeight: '600' },
+    historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+    historyItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#374151' },
+    historyService: { color: '#F9FAFB', fontSize: 16, fontWeight: '500' },
+    historyDate: { color: '#9CA3AF', fontSize: 12 },
+    historyPrice: { color: '#34D399', fontWeight: 'bold' },
+    historyStatus: { fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase' },
+    emptyText: { color: '#6B7280', fontSize: 16, textAlign: 'center' }
 });
 export default TeamManagementScreen;

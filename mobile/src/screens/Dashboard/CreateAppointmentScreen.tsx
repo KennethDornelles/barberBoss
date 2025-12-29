@@ -24,6 +24,7 @@ import { COLORS } from '../../constants/colors';
 import { SelectModal } from '../../components/common/SelectModal';
 import { SideMenu } from '../../components/common/SideMenu';
 import { MainStackParamList } from '../../navigation/AppNavigator'; // ⬅️ IMPORTAR TIPO
+import { navigateFromMenu } from '../../navigation/menuNavigationMap';
 
 interface Service {
     id: string;
@@ -268,9 +269,9 @@ const CreateAppointmentScreen: React.FC = () => {
                     onClose={() => setMenuVisible(false)}
                     onSelect={label => {
                         setMenuVisible(false);
-                        if (label === 'Dashboard') navigation.navigate('AppointmentsList');
-                        else if (label === 'Agendamentos') navigation.navigate('AppointmentsList');
-                        else if (label === 'Financeiro') navigation.navigate('FinanceSummary');
+                        if (!navigateFromMenu(label, navigation)) {
+                            // fallback ou alerta opcional
+                        }
                     }}
                 />
                 <View style={styles.header}>
@@ -299,9 +300,9 @@ const CreateAppointmentScreen: React.FC = () => {
                 onClose={() => setMenuVisible(false)}
                 onSelect={label => {
                     setMenuVisible(false);
-                    if (label === 'Dashboard') navigation.navigate('AppointmentsList');
-                    else if (label === 'Agendamentos') navigation.navigate('AppointmentsList');
-                    else if (label === 'Financeiro') navigation.navigate('FinanceSummary');
+                    if (!navigateFromMenu(label, navigation)) {
+                        // fallback ou alerta opcional
+                    }
                 }}
             />
             <View style={styles.header}>

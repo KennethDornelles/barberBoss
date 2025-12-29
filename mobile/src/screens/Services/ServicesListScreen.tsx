@@ -9,6 +9,7 @@ import { TopBar, SideMenu, FabButton } from '../../components/common/SideMenu';
 import { servicesService, ServiceItem } from '../../api/servicesService';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../navigation/AppNavigator';
+import { navigateFromMenu } from '../../navigation/menuNavigationMap';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
@@ -84,9 +85,9 @@ const ServicesListScreen: React.FC = () => {
             <TopBar onMenuPress={() => setMenuVisible(true)} onBellPress={() => { }} onProfilePress={() => { }} searchValue={searchText} onSearchChange={setSearchText} />
             <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} onSelect={(label) => {
                 setMenuVisible(false);
-                if (label === 'Dashboard' || label === 'Início') navigation.navigate('AppointmentsList');
-                if (label === 'Clientes') navigation.navigate('ClientsManagement');
-                if (label === 'Serviços') navigation.navigate('ServicesList');
+                if (!navigateFromMenu(label, navigation)) {
+                    // fallback ou alerta opcional
+                }
             }} />
 
             <View style={styles.segmentContainer}>

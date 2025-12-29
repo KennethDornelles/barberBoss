@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/apiClient';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../../constants/colors';
+import { navigateFromMenu } from '../../navigation/menuNavigationMap';
 
 // Interfaces de tipos para o relatório financeiro
 export interface Appointment {
@@ -141,9 +142,9 @@ export default function FinanceSummaryScreen() {
                 onClose={() => setMenuVisible(false)}
                 onSelect={label => {
                     setMenuVisible(false);
-                    if (label === 'Dashboard') navigation.navigate('AppointmentsList');
-                    else if (label === 'Agendamentos') navigation.navigate('AppointmentsList');
-                    else if (label === 'Financeiro') navigation.navigate('FinanceSummary');
+                    if (!navigateFromMenu(label, navigation)) {
+                        // fallback ou alerta opcional
+                    }
                 }}
             />
             {/* Header */}
