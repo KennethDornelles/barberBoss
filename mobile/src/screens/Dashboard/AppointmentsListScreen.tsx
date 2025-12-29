@@ -37,13 +37,14 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
     NO_SHOW: 'Não compareceu',
 };
 
-// ✅ CORREÇÃO: Adicionar TeamManagement ao tipo
+// --- CORREÇÃO AQUI ---
 type RootStackParamList = {
     AppointmentsList: undefined;
     CreateAppointment: { appointmentId?: string } | undefined;
     FinanceSummary: undefined;
     ClientsManagement: undefined;
-    TeamManagement: undefined; // ✅ Rota adicionada
+    TeamManagement: undefined;
+    ServicesList: undefined; // <--- Rota adicionada para corrigir o erro
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -201,11 +202,12 @@ const AppointmentsListScreen: React.FC = () => {
                 onSelect={label => {
                     setMenuVisible(false);
                     const normalized = label.toLowerCase();
-                    if (normalized === 'dashboard') navigation.navigate('AppointmentsList');
+                    if (normalized === 'dashboard' || normalized === 'início') navigation.navigate('AppointmentsList');
                     else if (normalized === 'agendamentos') navigation.navigate('AppointmentsList');
                     else if (normalized === 'financeiro') navigation.navigate('FinanceSummary');
                     else if (normalized === 'clientes') navigation.navigate('ClientsManagement');
-                    else if (normalized === 'equipe') navigation.navigate('TeamManagement'); // ✅ Agora funciona!
+                    else if (normalized === 'equipe') navigation.navigate('TeamManagement');
+                    else if (normalized === 'serviços') navigation.navigate('ServicesList');
                 }}
             />
             <View style={{ flex: 1 }}>

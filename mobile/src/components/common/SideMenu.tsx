@@ -18,7 +18,7 @@ interface MenuItem {
 const baseMenuItems: MenuItem[] = [
     { icon: 'grid-view', label: 'Início' },
     // { icon: 'event', label: 'Agendamentos' }, // removido
-    { icon: 'content-cut', label: 'Serviços' },
+    // Serviços será adicionado condicionalmente abaixo
     { icon: 'attach-money', label: 'Financeiro' },
     { icon: 'person', label: 'Perfil' },
 ];
@@ -51,6 +51,10 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect, 
     const menuItems = React.useMemo(() => {
         const items: MenuItem[] = [...baseMenuItems];
         if (user) {
+            // Adiciona Serviços apenas se não for CLIENT
+            if (user.role !== 'CLIENT') {
+                items.splice(1, 0, { icon: 'content-cut', label: 'Serviços' });
+            }
             if (user.role === 'BARBER' || user.role === 'ADMIN') {
                 items.splice(2, 0, { icon: 'groups', label: 'Clientes' });
             }
@@ -59,8 +63,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect, 
                 items.splice(3, 0, { icon: 'supervisor-account', label: 'Equipe' });
             }
         }
-        // Debug
-        // console.log('Menu items:', items.map(i => i.label), 'User:', user?.role);
         return items;
     }, [user]);
 

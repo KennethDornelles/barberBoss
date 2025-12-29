@@ -38,6 +38,8 @@ export type MainStackParamList = {
   FinanceSummary: undefined;
   ClientsManagement: undefined;
   TeamManagement: undefined;
+  ServicesList: undefined;
+  ServiceForm: { serviceId?: string } | undefined;
 };
 
 export type RootStackParamList = {
@@ -93,8 +95,6 @@ const MainNavigator: React.FC = () => {
         name="FinanceSummary"
         component={FinanceSummaryScreen}
       />
-
-      {/* CORREÇÃO: Apenas esta rota é necessária. Os modais estão dentro dela. */}
       <MainStack.Screen
         name="ClientsManagement"
         component={ClientsManagementScreen}
@@ -102,6 +102,14 @@ const MainNavigator: React.FC = () => {
       <MainStack.Screen
         name="TeamManagement"
         component={TeamManagementScreen}
+      />
+      <MainStack.Screen
+        name="ServicesList"
+        component={require('../screens/Services/ServicesListScreen').default}
+      />
+      <MainStack.Screen
+        name="ServiceForm"
+        component={require('../screens/Services/ServiceFormScreen').default}
       />
     </MainStack.Navigator>
   );
