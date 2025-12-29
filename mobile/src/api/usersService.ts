@@ -1,4 +1,3 @@
-
 import apiClient from './apiClient';
 
 export interface Client {
@@ -13,7 +12,54 @@ export interface PaginatedClients {
 	total: number;
 }
 
+export interface StaffMember {
+	id: string;
+	name: string;
+	email: string;
+	phone: string;
+	role: 'ADMIN' | 'BARBER';
+	status: 'active' | 'inactive';
+}
+
 export const usersService = {
+	async getStaff(search = ""): Promise<StaffMember[]> {
+		const params: any = { role: 'BARBER', limit: 100 };
+		if (search) params.search = search;
+		const res = await apiClient.get('/users', { params });
+		let users: StaffMember[] = [];
+		if (res.data && Array.isArray(res.data.users)) users = res.data.users;
+		else if (Array.isArray(res.data)) users = res.data;
+		else users = res.data?.data || [];
+		// Garante que só BARBER seja retornado
+		return users.filter(u => u.role === 'BARBER');
+	},
+
+	async createStaff(data: { name: string; email: string; phone: string; role: 'ADMIN' | 'BARBER' }): Promise<StaffMember> {
+		try {
+			const res = await apiClient.post('/users', { ...data });
+			return res.data;
+		} catch (error: any) {
+			throw new Error(error?.message || 'Erro ao criar membro da equipe');
+		}
+	},
+
+	async updateStaff(id: string, data: { name?: string; email?: string; phone?: string; role?: 'ADMIN' | 'BARBER'; status?: 'active' | 'inactive' }): Promise<StaffMember> {
+		try {
+			const res = await apiClient.patch(`/users/${id}`, data);
+			return res.data;
+		} catch (error: any) {
+			throw new Error(error?.message || 'Erro ao atualizar membro da equipe');
+		}
+	},
+
+	async deleteStaff(id: string): Promise<void> {
+		try {
+			await apiClient.delete(`/users/${id}`);
+		} catch (error: any) {
+			throw new Error(error?.message || 'Erro ao excluir membro da equipe');
+		}
+	},
+
 	async getClients(search = ''): Promise<Client[]> {
 		const params: any = { role: 'CLIENT', limit: 100 };
 		if (search) params.search = search;
@@ -23,7 +69,6 @@ export const usersService = {
 		return res.data?.data || [];
 	},
 
-
 	async createClient(data: { name: string; phone: string }): Promise<Client> {
 		try {
 			const res = await apiClient.post('/users', { ...data, role: 'CLIENT' });
@@ -32,7 +77,6 @@ export const usersService = {
 			throw new Error(error?.message || 'Erro ao criar cliente');
 		}
 	},
-
 
 	async updateClient(id: string, data: { name: string; phone: string }): Promise<Client> {
 		try {

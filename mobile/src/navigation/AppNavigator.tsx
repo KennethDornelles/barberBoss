@@ -20,8 +20,8 @@ import ForgotPasswordScreen from "../screens/Auth/ForgotPasswordScreen";
 import AppointmentsListScreen from "../screens/Dashboard/AppointmentsListScreen";
 import CreateAppointmentScreen from "../screens/Dashboard/CreateAppointmentScreen";
 import FinanceSummaryScreen from "../screens/Dashboard/FinanceSummaryScreen";
-// CORREÇÃO: Importando a tela unificada do caminho correto (Dashboard)
-import ClientsManagementScreen from "../screens/Clients/ClientsManagementScreen"; 
+import ClientsManagementScreen from "../screens/Clients/ClientsManagementScreen";
+import TeamManagementScreen from "../screens/Dashboard/TeamManagementScreen";
 
 // ============================================================================
 // TYPES
@@ -36,7 +36,8 @@ export type MainStackParamList = {
   AppointmentsList: undefined;
   CreateAppointment: { appointmentId?: string } | undefined;
   FinanceSummary: undefined;
-  ClientsManagement: undefined; // Única rota necessária para clientes agora
+  ClientsManagement: undefined;
+  TeamManagement: undefined;
 };
 
 export type RootStackParamList = {
@@ -92,13 +93,16 @@ const MainNavigator: React.FC = () => {
         name="FinanceSummary"
         component={FinanceSummaryScreen}
       />
-      
+
       {/* CORREÇÃO: Apenas esta rota é necessária. Os modais estão dentro dela. */}
       <MainStack.Screen
         name="ClientsManagement"
         component={ClientsManagementScreen}
       />
-      
+      <MainStack.Screen
+        name="TeamManagement"
+        component={TeamManagementScreen}
+      />
     </MainStack.Navigator>
   );
 };

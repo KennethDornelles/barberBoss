@@ -8,7 +8,7 @@ const { width } = Dimensions.get('window');
 const MENU_WIDTH = width * 0.75;
 
 // Defina o tipo para os itens do menu
-type MenuItemIcon = 'grid-view' | 'event' | 'content-cut' | 'attach-money' | 'person' | 'groups';
+type MenuItemIcon = 'grid-view' | 'event' | 'content-cut' | 'attach-money' | 'person' | 'groups' | 'supervisor-account';
 
 interface MenuItem {
     icon: MenuItemIcon;
@@ -16,8 +16,8 @@ interface MenuItem {
 }
 
 const baseMenuItems: MenuItem[] = [
-    { icon: 'grid-view', label: 'Dashboard' },
-    { icon: 'event', label: 'Agendamentos' },
+    { icon: 'grid-view', label: 'Início' },
+    // { icon: 'event', label: 'Agendamentos' }, // removido
     { icon: 'content-cut', label: 'Serviços' },
     { icon: 'attach-money', label: 'Financeiro' },
     { icon: 'person', label: 'Perfil' },
@@ -28,6 +28,7 @@ interface SideMenuProps {
     visible: boolean;
     onClose: () => void;
     onSelect: (label: string) => void;
+    onAddTeamMember?: () => void;
 }
 
 interface TopBarProps {
@@ -42,16 +43,24 @@ interface FabButtonProps {
     onPress: () => void;
 }
 
-export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect }) => {
+export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect, onAddTeamMember }) => {
     const [animValue] = useState(new Animated.Value(visible ? 0 : -MENU_WIDTH));
     const { signOut, user } = useAuth();
 
     // Monta menu dinamicamente
     const menuItems = React.useMemo(() => {
         const items: MenuItem[] = [...baseMenuItems];
-        if (user && (user.role === 'BARBER' || user.role === 'ADMIN')) {
-            items.splice(2, 0, { icon: 'groups', label: 'Clientes' });
+        if (user) {
+            if (user.role === 'BARBER' || user.role === 'ADMIN') {
+                items.splice(2, 0, { icon: 'groups', label: 'Clientes' });
+            }
+            if (user.role === 'ADMIN') {
+                // Garante que 'Equipe' sempre aparece após 'Clientes'
+                items.splice(3, 0, { icon: 'supervisor-account', label: 'Equipe' });
+            }
         }
+        // Debug
+        // console.log('Menu items:', items.map(i => i.label), 'User:', user?.role);
         return items;
     }, [user]);
 
@@ -77,6 +86,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onSelect }
                     <Text style={styles.menuItemText}>{item.label}</Text>
                 </TouchableOpacity>
             ))}
+            {/* O botão 'Novo Membro' foi removido. O acesso ao cadastro é feito dentro da tela de Equipe. */}
             <TouchableOpacity style={styles.logoutBtn} onPress={signOut}>
                 <Ionicons name="log-out-outline" size={22} color="#fff" style={{ marginRight: 12 }} />
                 <Text style={styles.logoutText}>Sair</Text>
@@ -122,6 +132,21 @@ export const FabButton: React.FC<FabButtonProps> = ({ onPress }) => (
 );
 
 const styles = StyleSheet.create({
+    addTeamBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 18,
+        paddingVertical: 14,
+        borderRadius: 8,
+        backgroundColor: '#2563eb',
+        justifyContent: 'center',
+    },
+    addTeamBtnText: {
+        color: '#fff',
+        fontSize: 17,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
     menu: {
         position: 'absolute',
         top: 0,
