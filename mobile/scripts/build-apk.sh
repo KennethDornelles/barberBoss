@@ -89,8 +89,34 @@ if [ -d "$ANDROID_DIR" ]; then
   read -p "Deseja recriar? (s/N): " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Ss]$ ]]; then
+    # Fazer backup do keystore e gradle.properties antes de deletar
+    BACKUP_DIR="/tmp/barberboss-backup-$(date +%s)"
+    mkdir -p "$BACKUP_DIR"
+    
+    if [ -f "$KEYSTORE" ]; then
+      cp "$KEYSTORE" "$BACKUP_DIR/"
+      print_success "Backup do keystore criado em $BACKUP_DIR"
+    fi
+    
+    if [ -f "$GRADLE_PROPS" ]; then
+      cp "$GRADLE_PROPS" "$BACKUP_DIR/"
+      print_success "Backup do gradle.properties criado em $BACKUP_DIR"
+    fi
+    
     rm -rf "$ANDROID_DIR"
     npx expo prebuild --platform android --clean
+    
+    # Restaurar arquivos
+    mkdir -p "$APP_DIR"
+    if [ -f "$BACKUP_DIR/barberboss-release-key.keystore" ]; then
+      cp "$BACKUP_DIR/barberboss-release-key.keystore" "$KEYSTORE"
+      print_success "Keystore restaurado"
+    fi
+    
+    if [ -f "$BACKUP_DIR/gradle.properties" ]; then
+      cp "$BACKUP_DIR/gradle.properties" "$GRADLE_PROPS"
+      print_success "gradle.properties restaurado"
+    fi
   fi
 else
   npx expo prebuild --platform android
@@ -127,11 +153,20 @@ else
 fi
 
 # ============================================================================
-# STEP 5: Gerar Keystore
+# STEP 5: Verificar Keystore
 # ============================================================================
-print_step "[5/7] Configurando keystore..."
+print_step "[5/7] Verificando keystore..."
 
-if [ ! -f "$KEYSTORE" ]; then
+if [ -f "$KEYSTORE" ]; then
+  print_success "Keystore encontrado: $KEYSTORE"
+  
+  # Verificar se o keystore é válido
+  if keytool -list -keystore "$KEYSTORE" -alias barberboss-key -storepass test 2>/dev/null; then
+    print_success "Keystore válido"
+  else
+    print_warning "Não foi possível verificar o keystore (senha pode estar incorreta, mas isso é OK)"
+  fi
+else
   echo ""
   print_warning "KEYSTORE NÃO ENCONTRADO - Vamos criar um novo"
   echo ""
@@ -146,7 +181,7 @@ if [ ! -f "$KEYSTORE" ]; then
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
   
-  read -p "Pressione ENTER para continuar..."
+  read -p "Pressione ENTER para continuar ou Ctrl+C para cancelar..."
   
   keytool -genkeypair -v -storetype PKCS12 \
     -keystore "$KEYSTORE" \
@@ -165,9 +200,6 @@ if [ ! -f "$KEYSTORE" ]; then
   echo "  3. Gerenciador de senhas (1Password, LastPass)"
   echo ""
   read -p "Pressione ENTER após fazer o backup..."
-  
-else
-  print_success "Keystore já existe: $KEYSTORE"
 fi
 
 # ============================================================================

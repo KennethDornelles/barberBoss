@@ -1,0 +1,20 @@
+# ========================================
+# CONFIGURAÇÃO DE ASSINATURA DO APK
+# ========================================
+# IMPORTANTE: Copie este arquivo para gradle.properties
+# e preencha com suas senhas reais
+
+# Caminho do keystore
+MYAPP_UPLOAD_STORE_FILE=barberboss-release-key.keystore
+
+# Alias da chave (definido ao criar keystore)
+MYAPP_UPLOAD_KEY_ALIAS=barberboss-key
+
+# Senhas (NUNCA COMMITE ESTE ARQUIVO!)
+MYAPP_UPLOAD_STORE_PASSWORD=SUA_SENHA_AQUI
+MYAPP_UPLOAD_KEY_PASSWORD=SUA_SENHA_AQUI
+
+# Outras configurações do Gradle
+android.useAndroidX=true
+android.enableJetifier=true
+org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8

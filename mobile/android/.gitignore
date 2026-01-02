@@ -14,9 +14,3 @@ local.properties
 
 # Bundle artifacts
 *.jsbundle
-
-# Expo
-.expo/
-
-# Android network security config
-app/src/main/res/xml/network_security_config.xml
