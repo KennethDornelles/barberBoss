@@ -2,14 +2,16 @@ name: Keep Render Alive
 
 on:
   schedule:
-    - cron: '*/14 * * * *'
+    - cron: '*/14 * * * *' # Executa a cada 14 min para evitar o sleep de 15 min do Render
   workflow_dispatch:
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
     env:
-      API_URL: https://barberboss-api.onrender.com/api
+      # Use a URL exata do seu serviço Live
+      API_URL: https://barberboss-hvkz.onrender.com/api
     steps:
-      - name: Keep Render API awake
-        run: curl -I -L "$API_URL"
+      - name: Acordar o Backend
+        # Pinga a rota de saúde específica
+        run: curl -I -L https://barberboss-hvkz.onrender.com/api/health
