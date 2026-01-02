@@ -145,3 +145,8 @@ vite.config.ts.timestamp-*
 
 # Expo
 .expo/
+
+# Android Keystore e configs
+*.jks
+*.keystore
+mobile/android/app/src/main/res/xml/network_security_config.xml
