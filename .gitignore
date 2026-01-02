@@ -142,3 +142,11 @@ backend/dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Expo
+.expo/
+
+# Android Keystore e configs
+*.jks
+*.keystore
+mobile/android/app/src/main/res/xml/network_security_config.xml

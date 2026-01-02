@@ -51,30 +51,19 @@ async function bootstrap() {
     console.log('⚠️  Helmet desabilitado em desenvolvimento');
   }
 
-  // ===== CORS - Compatível com Mobile (Capacitor) + Ngrok =====
+  // ===== CORS - Produção: liberar para APK e domínio web oficial =====
   app.enableCors({
-    origin: [
-      // Localhost
-      'http://localhost:3000',
-      'http://localhost:8081',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:8081',
-
-      // Ngrok - aceita qualquer subdomínio
-      /^https:\/\/.*\.ngrok-free\.dev$/,
-      /^https:\/\/.*\.ngrok\.io$/,
-      /^https:\/\/.*\.ngrok\.app$/,
-
-      // Rede local (192.168.x.x)
-      /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/,
-
-      // Expo
-      /^exp:\/\/.*/,
-
-      // Capacitor (iOS/Android)
-      'capacitor://localhost',
-      'http://localhost',
-    ],
+    origin: (origin, callback) => {
+      // Permitir requests sem origin (ex: mobile/native)
+      if (!origin) return callback(null, true);
+      // Permitir domínio web oficial
+      if (origin === 'https://barberboss-hvkz.onrender.com') return callback(null, true);
+      // Permitir requests do app mobile (APK, origin pode ser undefined)
+      // Permitir localhost para testes
+      if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) return callback(null, true);
+      // Bloquear outros
+      return callback(new Error('Not allowed by CORS'), false);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: [
@@ -86,7 +75,7 @@ async function bootstrap() {
       'X-Requested-With',
     ],
     exposedHeaders: ['Authorization'],
-    maxAge: 86400, // 24 horas
+    maxAge: 86400,
   });
 
   console.log('🌐 CORS configurado para ngrok, mobile e rede local.');
