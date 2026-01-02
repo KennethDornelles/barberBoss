@@ -39,10 +39,11 @@ function createApiClient(baseURL: string): AxiosInstance {
 
   return axios.create({
     baseURL: finalURL,
-    timeout: parseInt(API_TIMEOUT || "15000"),
+    // Converte para número e garante um mínimo de 30s para o Render "acordar"
+    timeout: Math.max(parseInt(API_TIMEOUT || "30000"), 30000),
     headers: {
       "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true", // IMPORTANTE para ngrok
+      // Removido o ngrok-skip-browser-warning pois não é mais necessário no Render
     },
   });
 }
