@@ -222,6 +222,7 @@ export class AppointmentService {
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
+    user?: { id: string; role: string },
   ): Promise<Appointment> {
     console.log('--- [DEBUG] AppointmentService.create ---');
     console.log(
@@ -229,7 +230,7 @@ export class AppointmentService {
       JSON.stringify(createAppointmentDto, null, 2),
     );
 
-    // Validação XOR entre userId e clientName
+    // Validação refinada considerando o role do usuário
     const hasUserId = !!createAppointmentDto.userId;
     const hasClientName = !!createAppointmentDto.clientName?.trim();
 
@@ -239,10 +240,15 @@ export class AppointmentService {
       );
     }
 
+    // Se ambos presentes, só bloqueia se userId for de CLIENTE
     if (hasUserId && hasClientName) {
-      throw new BadRequestException(
-        'Forneça APENAS userId (cliente cadastrado) OU clientName (agendamento manual), não ambos.',
-      );
+      // Se o usuário autenticado for CLIENTE, bloqueia
+      if (user?.role === 'CLIENT') {
+        throw new BadRequestException(
+          'Forneça APENAS userId (cliente cadastrado) OU clientName (agendamento manual), não ambos.',
+        );
+      }
+      // Se for BARBER ou ADMIN, permite (agendamento manual para si mesmo)
     }
 
     // Verificar se o serviço existe e está ativo
@@ -378,10 +384,11 @@ export class AppointmentService {
           );
         }
 
-
         // Garantir que price seja numérico e não nulo, usando o service já buscado no início
-        const servicePrice = service.price 
-          ? (typeof service.price === 'string' ? parseFloat(service.price) : Number(service.price))
+        const servicePrice = service.price
+          ? typeof service.price === 'string'
+            ? parseFloat(service.price)
+            : Number(service.price)
           : 0;
 
         const COMMISSION_RATE = 0.5;
@@ -392,7 +399,7 @@ export class AppointmentService {
           commissionValue,
           servicePriceOriginal: service.price,
           servicePriceType: typeof service.price,
-          serviceId: service.id
+          serviceId: service.id,
         });
 
         return await tx.appointment.create({
@@ -577,15 +584,20 @@ export class AppointmentService {
       let commissionValue: Prisma.Decimal | undefined = undefined;
       if (updateAppointmentDto.status === 'COMPLETED') {
         // Garante que sempre pega o serviceId atualizado
-        const serviceIdToUse = updateAppointmentDto.serviceId || current!.serviceId;
+        const serviceIdToUse =
+          updateAppointmentDto.serviceId || current!.serviceId;
         const serviceForCommission = await this.prisma.service.findUnique({
           where: { id: serviceIdToUse },
         });
         if (!serviceForCommission) {
-          throw new NotFoundException('Serviço não encontrado para cálculo de comissão');
+          throw new NotFoundException(
+            'Serviço não encontrado para cálculo de comissão',
+          );
         }
         const servicePrice = serviceForCommission.price
-          ? (typeof serviceForCommission.price === 'string' ? parseFloat(serviceForCommission.price) : Number(serviceForCommission.price))
+          ? typeof serviceForCommission.price === 'string'
+            ? parseFloat(serviceForCommission.price)
+            : Number(serviceForCommission.price)
           : 0;
         const COMMISSION_RATE = 0.5;
         const calculatedCommission = servicePrice * COMMISSION_RATE;

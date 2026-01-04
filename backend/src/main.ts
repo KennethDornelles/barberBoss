@@ -57,10 +57,15 @@ async function bootstrap() {
       // Permitir requests sem origin (ex: mobile/native)
       if (!origin) return callback(null, true);
       // Permitir domínio web oficial
-      if (origin === 'https://barberboss-hvkz.onrender.com') return callback(null, true);
+      if (origin === 'https://barberboss-hvkz.onrender.com')
+        return callback(null, true);
       // Permitir requests do app mobile (APK, origin pode ser undefined)
       // Permitir localhost para testes
-      if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) return callback(null, true);
+      if (
+        origin.startsWith('http://localhost') ||
+        origin.startsWith('http://127.0.0.1')
+      )
+        return callback(null, true);
       // Bloquear outros
       return callback(new Error('Not allowed by CORS'), false);
     },

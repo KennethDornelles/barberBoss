@@ -42,10 +42,39 @@ type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type RoutePropType = RouteProp<MainStackParamList, "CreateAppointment">;
 
 const CreateAppointmentScreen: React.FC = () => {
+    // Corrige erro TS: Cannot find name 'openDateTimePicker'.
+    const openDateTimePicker = () => {
+        setPickerMode('date');
+        setShowDatePicker(true);
+    };
+
+    // Corrige erro TS: Cannot find name 'handleDateChange'.
+    const handleDateChange = (event: any, selected?: Date) => {
+        if (Platform.OS === 'android') {
+            setShowDatePicker(false);
+            setShowTimePicker(false);
+        }
+        if (selected) {
+            setSelectedDate(selected);
+            if (pickerMode === 'date' && Platform.OS === 'android') {
+                setPickerMode('time');
+                setShowTimePicker(true);
+            }
+        }
+    };
     const navigation = useNavigation<NavigationProp>();
     const [menuVisible, setMenuVisible] = useState(false);
     const route = useRoute<RoutePropType>();
     const { user } = useAuth();
+
+    // Corrige erro TS: 'user' is possibly 'null'.
+    if (!user) {
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>Usuário não autenticado.</Text>
+            </SafeAreaView>
+        );
+    }
 
     const appointmentId = route.params?.appointmentId;
     const isEditing = !!appointmentId;
@@ -59,10 +88,10 @@ const CreateAppointmentScreen: React.FC = () => {
     const [manualClientName, setManualClientName] = useState("");
     const [selectedService, setSelectedService] = useState("");
     const [selectedBarber, setSelectedBarber] = useState("");
-    
+
     // ✅ DATA: Inicializa com a data/hora local do dispositivo
     const [selectedDate, setSelectedDate] = useState(new Date());
-    
+
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [pickerMode, setPickerMode] = useState<"date" | "time">("date");
@@ -111,49 +140,11 @@ const CreateAppointmentScreen: React.FC = () => {
                     else if (data.clientName) setManualClientName(data.clientName);
                 }
             }
-        } catch (err) {
-            Alert.alert("Erro", "Não foi possível carregar os dados");
-        } finally {
+            setLoading(false);
             setFetchingData(false);
-        }
-    };
-
-    const handleDateChange = (event: any, date?: Date) => {
-        if (Platform.OS === "android") {
-            if (pickerMode === "date") setShowDatePicker(false);
-            else setShowTimePicker(false);
-
-            if (event.type === "set" && date) {
-                if (pickerMode === "date") {
-                    const newDate = new Date(selectedDate);
-                    newDate.setFullYear(date.getFullYear());
-                    newDate.setMonth(date.getMonth());
-                    newDate.setDate(date.getDate());
-                    setSelectedDate(newDate);
-
-                    setTimeout(() => {
-                        setPickerMode("time");
-                        setShowTimePicker(true);
-                    }, 500);
-                } else {
-                    const newDate = new Date(selectedDate);
-                    newDate.setHours(date.getHours());
-                    newDate.setMinutes(date.getMinutes());
-                    setSelectedDate(newDate);
-                }
-            }
-        } else {
-            if (date) setSelectedDate(date);
-            if (event.type === "dismissed") setShowDatePicker(false);
-        }
-    };
-
-    const openDateTimePicker = () => {
-        if (Platform.OS === "android") {
-            setPickerMode("date");
-            setShowDatePicker(true);
-        } else {
-            setShowDatePicker(true);
+        } catch (err) {
+            setLoading(false);
+            setFetchingData(false);
         }
     };
 
@@ -176,9 +167,10 @@ const CreateAppointmentScreen: React.FC = () => {
             // 🔥 CORREÇÃO DE OURO: Enviar ISO com Offset local
             // Exemplo: "2025-12-31T16:03:00-03:00"
             // O backend NestJS entenderá isso perfeitamente e converterá corretamente.
-            const dateWithOffset = dayjs(selectedDate).format(); 
+            const dateWithOffset = dayjs(selectedDate).format();
 
             let payload: Partial<CreateAppointmentDTO> = {
+
                 serviceId: selectedService,
                 startsAt: dateWithOffset,
             };
@@ -186,10 +178,19 @@ const CreateAppointmentScreen: React.FC = () => {
             if (isClient) {
                 payload.userId = user.id;
                 payload.barberId = selectedBarber;
+                // Garante que clientName não será enviado
+                delete payload.clientName;
             } else {
                 payload.barberId = user.id;
-                if (selectedClient) payload.userId = selectedClient;
-                else if (manualClientName.trim()) payload.clientName = manualClientName.trim();
+                if (selectedClient) {
+                    payload.userId = selectedClient;
+                    // Garante que clientName não será enviado
+                    delete payload.clientName;
+                } else if (manualClientName.trim()) {
+                    payload.clientName = manualClientName.trim();
+                    // Garante que userId não será enviado
+                    delete payload.userId;
+                }
             }
 
             if (!payload.barberId) {
@@ -219,7 +220,7 @@ const CreateAppointmentScreen: React.FC = () => {
     if (fetchingData) {
         return (
             <SafeAreaView style={styles.container}>
-                 <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} onSelect={(l) => { setMenuVisible(false); if (!navigateFromMenu(l, navigation)) {} }} />
+                <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} onSelect={(l) => { setMenuVisible(false); if (!navigateFromMenu(l, navigation)) { } }} />
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={COLORS.primary} />
                 </View>
@@ -229,7 +230,7 @@ const CreateAppointmentScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} onSelect={(l) => { setMenuVisible(false); if (!navigateFromMenu(l, navigation)) {} }} />
+            <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} onSelect={(l) => { setMenuVisible(false); if (!navigateFromMenu(l, navigation)) { } }} />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ marginRight: 12 }}>
                     <Ionicons name="menu" size={28} color="#fff" />
@@ -320,9 +321,9 @@ const CreateAppointmentScreen: React.FC = () => {
                             onChange={handleDateChange}
                         />
                     )}
-                    
+
                     {showDatePicker && Platform.OS === 'ios' && (
-                         <DateTimePicker
+                        <DateTimePicker
                             value={selectedDate}
                             mode="time"
                             display="spinner"
@@ -349,7 +350,9 @@ const CreateAppointmentScreen: React.FC = () => {
             <SelectModal
                 visible={showClientModal} title="Selecione o Cliente"
                 options={clients.map(c => ({ id: c.id, name: c.name, description: c.email }))}
-                selectedId={selectedClient} onSelect={setSelectedClient} onClose={() => setShowClientModal(false)}
+                selectedId={selectedClient}
+                onSelect={(id) => { setSelectedClient(id); setManualClientName(""); }}
+                onClose={() => setShowClientModal(false)}
             />
             <SelectModal
                 visible={showBarberModal} title="Selecione o Barbeiro"

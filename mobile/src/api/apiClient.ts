@@ -17,9 +17,17 @@ interface ApiError {
 const TOKEN_KEY = "@BarberBoss:token";
 
 // Acessar variáveis de ambiente do Expo
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const API_BASE_URL_PROD = process.env.EXPO_PUBLIC_API_BASE_URL;
+const API_BASE_URL_DEV = process.env.EXPO_PUBLIC_API_BASE_URL_DEV;
 const API_BASE_URL_FALLBACK = process.env.EXPO_PUBLIC_API_BASE_URL_FALLBACK;
 const API_TIMEOUT = process.env.EXPO_PUBLIC_API_TIMEOUT;
+const NODE_ENV = process.env.EXPO_PUBLIC_NODE_ENV;
+
+// Alterna entre produção e desenvolvimento
+const API_BASE_URL =
+  NODE_ENV === 'development'
+    ? API_BASE_URL_DEV || API_BASE_URL_FALLBACK
+    : API_BASE_URL_PROD;
 
 // ============================================================================
 // 🔧 LOGS DE CONFIGURAÇÃO
