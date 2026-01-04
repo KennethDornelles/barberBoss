@@ -146,6 +146,28 @@ vite.config.ts.timestamp-*
 # Expo
 .expo/
 
+# iOS/Xcode
+mobile/ios/Pods/
+mobile/ios/**/*.xcworkspace/
+mobile/ios/**/*.xcuserdata/
+mobile/ios/**/*.xcuserstate
+mobile/ios/**/*.xcscmblueprint
+mobile/ios/**/*.xcshareddata/xcdebugger/
+mobile/ios/**/*.xcshareddata/xcschemes/*
+!mobile/ios/**/*.xcshareddata/xcschemes/*.xcscheme
+mobile/ios/**/*.xcshareddata/WorkspaceSettings.xcsettings
+mobile/ios/**/*.xcsettings
+mobile/ios/**/*.moved-aside
+mobile/ios/**/*.swp
+mobile/ios/**/*.lock
+mobile/ios/**/*.plist~
+mobile/ios/**/Expo.plist
+
+# Arquivos de ambiente
+mobile/.env
+mobile/.env.*
+!mobile/.env.example
+
 # Android Keystore e configs
 *.jks
 *.keystore
